@@ -25,7 +25,7 @@ class _LoginPageState extends State<LoginPage> {
 
           /// TITLE
           Text(
-            "assalamualaikum",
+            "Masuk",
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
