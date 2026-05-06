@@ -4,6 +4,8 @@ import 'register_page.dart';
 import 'homepage.dart';
 
 class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
@@ -14,6 +16,7 @@ class _LoginPageState extends State<LoginPage> {
   String email = '';
   String password = '';
   bool hidePassword = true;
+  bool isLoading = false; // 🔥 tambahan
 
   @override
   Widget build(BuildContext context) {
@@ -76,27 +79,64 @@ class _LoginPageState extends State<LoginPage> {
 
                     /// LOGIN BUTTON
                     primaryButton("Masuk", () async {
-                      bool success = await auth.login(email, password);
+                      // 🔥 rapihin input
+                      email = email.trim().toLowerCase();
+                      password = password.trim();
+
+                      // ❌ validasi kosong
+                      if (email.isEmpty || password.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content:
+                                  Text("Email dan password wajib diisi")),
+                        );
+                        return;
+                      }
+
+                      // ❌ validasi email
+                      final emailRegex =
+                          RegExp(r'^[^@]+@[^@]+\.[^@]+$');
+                      if (!emailRegex.hasMatch(email)) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content:
+                                  Text("Format email tidak valid")),
+                        );
+                        return;
+                      }
+
+                      // 🔄 loading ON
+                      setState(() => isLoading = true);
+
+                      bool success =
+                          await auth.login(email, password);
+
+                      // 🔄 loading OFF
+                      setState(() => isLoading = false);
 
                       if (success) {
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (_) => HomePage()),
+                          MaterialPageRoute(
+                              builder: (_) => const HomePage()),
                         );
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Login gagal")),
+                          SnackBar(
+                              content:
+                                  Text("Email atau password salah")),
                         );
                       }
                     }),
 
                     SizedBox(height: 12),
 
-                    /// REGISTER BUTTON (BARU 🔥)
+                    /// REGISTER BUTTON
                     secondaryButton("Daftar", () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => RegisterPage()),
+                        MaterialPageRoute(
+                            builder: (_) => RegisterPage()),
                       );
                     }),
 
@@ -106,7 +146,8 @@ class _LoginPageState extends State<LoginPage> {
                     Center(
                       child: Text(
                         "Atau masuk dengan",
-                        style: TextStyle(fontSize: 12, color: Colors.black),
+                        style:
+                            TextStyle(fontSize: 12, color: Colors.black),
                       ),
                     ),
 
@@ -119,7 +160,8 @@ class _LoginPageState extends State<LoginPage> {
                         height: 44,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.grey.shade300),
+                          border: Border.all(
+                              color: Colors.grey.shade300),
                         ),
                         child: Center(
                           child: Text(
@@ -141,8 +183,8 @@ class _LoginPageState extends State<LoginPage> {
                       child: RichText(
                         text: TextSpan(
                           text: "Belum punya akun? ",
-                          style:
-                              TextStyle(color: Colors.grey, fontSize: 13),
+                          style: TextStyle(
+                              color: Colors.grey, fontSize: 13),
                           children: [
                             WidgetSpan(
                               child: GestureDetector(
@@ -150,7 +192,8 @@ class _LoginPageState extends State<LoginPage> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (_) => RegisterPage()),
+                                        builder: (_) =>
+                                            RegisterPage()),
                                   );
                                 },
                                 child: Text(
@@ -176,7 +219,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  /// INPUT FIELD (SAMA KAYAK REGISTER)
+  /// INPUT FIELD
   Widget labeledInput({
     required String label,
     required String hint,
@@ -201,6 +244,9 @@ class _LoginPageState extends State<LoginPage> {
         ),
         SizedBox(height: 6),
         TextField(
+          keyboardType: isPassword
+              ? TextInputType.text
+              : TextInputType.emailAddress, // 🔥 UX fix
           obscureText: isPassword ? hidePass : false,
           onChanged: onChanged,
           decoration: InputDecoration(
@@ -240,21 +286,27 @@ class _LoginPageState extends State<LoginPage> {
             shape: StadiumBorder(),
             padding: EdgeInsets.symmetric(vertical: 12),
           ),
-          onPressed: onPressed,
-          child: Text(
-            text,
-            style: TextStyle(
-              color: Color.fromARGB(255, 1, 34, 73),
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
-          ),
+          onPressed: isLoading ? null : onPressed, // 🔥 disable
+          child: isLoading
+              ? SizedBox(
+                  height: 18,
+                  width: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(
+                  text,
+                  style: TextStyle(
+                    color: Color.fromARGB(255, 1, 34, 73),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
         ),
       ),
     );
   }
 
-  /// BUTTON SEKUNDER (BIRU MUDA)
+  /// BUTTON SEKUNDER
   Widget secondaryButton(String text, VoidCallback onPressed) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 80),
