@@ -6,7 +6,7 @@ import 'budget_page.dart';
 import 'tabungan_page.dart';
 import 'laporan_page.dart';
 import 'profile_page.dart';
-import 'notifikasi_page.dart'; // ← halaman baru
+import 'notifikasi_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -23,15 +23,15 @@ class _HomePageState extends State<HomePage> {
   List<Map<String, dynamic>> transaksiList = [];
   List<Map<String, dynamic>> kategoriList = [];
 
-  // ── Notifikasi ──
-  List<Map<String, dynamic>> notifikasiList = []; // {pesan, waktu}
+  // Notifikasi
+  List<Map<String, dynamic>> notifikasiList = []; 
   bool hasNotification = false;
 
   double totalPemasukan = 0;
   double totalPengeluaran = 0;
 
   final amountController = TextEditingController();
-  final kategoriController = TextEditingController(); // ← ganti dropdown → text field
+  final kategoriController = TextEditingController();
   String selectedJenis = 'pemasukan';
 
   DateTime selectedMonth = DateTime.now();
@@ -95,7 +95,47 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // ── Tambah notifikasi ke list & tandai ada dot ──
+  void _showSuccessPopup() {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    barrierColor: Colors.black.withOpacity(0.4),
+    builder: (_) {
+      return Center(
+        child: Container(
+          width: 260,
+          padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.check_circle,
+                  size: 80, color: Color(0xFF6DB5FD)),
+              const SizedBox(height: 16),
+              const Text(
+                "Transaksi Berhasil\nDitambahkan",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF6DB5FD),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+
+  Future.delayed(const Duration(milliseconds: 5000), () {
+    if (mounted) Navigator.pop(context);
+  });
+}
+
   void _addNotifikasi({
     required String judul,
     required String pesan,
@@ -151,8 +191,8 @@ class _HomePageState extends State<HomePage> {
       'jenis': selectedJenis,
       'tanggal': DateTime.now().toIso8601String(),
     });
+    _showSuccessPopup(); 
 
-    // ✅ FIX: NOTIF UNTUK SEMUA TRANSAKSI
     _addNotifikasi(
       judul: selectedJenis == 'pemasukan'
           ? 'Pemasukan'
@@ -168,6 +208,7 @@ class _HomePageState extends State<HomePage> {
 
     await _loadData();
   }
+
 Future<void> _delete(int id) async {
   final confirm = await showDialog<bool>(
     context: context,
@@ -178,7 +219,6 @@ Future<void> _delete(int id) async {
         borderRadius: BorderRadius.circular(20),
       ),
 
-      // ===== TITLE (CENTER) =====
       title: const Text(
         "Hapus Transaksi",
         textAlign: TextAlign.center,
@@ -188,7 +228,6 @@ Future<void> _delete(int id) async {
         ),
       ),
 
-      // ===== CONTENT (CENTER) =====
       content: const Text(
         "Yakin ingin menghapus transaksi ini?",
         textAlign: TextAlign.center,
@@ -199,7 +238,6 @@ Future<void> _delete(int id) async {
         ),
       ),
 
-      // ===== BUTTONS =====
       actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       actions: [
         Row(
@@ -252,14 +290,13 @@ void _editTransaksi(Map<String, dynamic> t) {
 
   showDialog(
     context: context,
-    barrierColor: Colors.black.withOpacity(0.25), // ⬅️ efek gelap halus
+    barrierColor: Colors.black.withOpacity(0.25), 
     builder: (context) => AlertDialog(
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20), // ⬅️ lebih smooth
+        borderRadius: BorderRadius.circular(20), 
       ),
 
-      // ===== TITLE =====
       title: const Text(
         "Edit Transaksi",
         style: TextStyle(
@@ -269,7 +306,6 @@ void _editTransaksi(Map<String, dynamic> t) {
         ),
       ),
 
-      // ===== CONTENT =====
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -292,7 +328,7 @@ void _editTransaksi(Map<String, dynamic> t) {
                   child: TextField(
                     controller: controller,
                     keyboardType: TextInputType.number,
-                    autofocus: true, // ⬅️ langsung ngetik
+                    autofocus: true, 
                     cursorColor: const Color(0xFF012249),
                     decoration: const InputDecoration(
                       border: InputBorder.none,
@@ -306,7 +342,6 @@ void _editTransaksi(Map<String, dynamic> t) {
         ],
       ),
 
-      // ===== ACTIONS =====
       actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       actions: [
         Row(
@@ -401,7 +436,6 @@ void _editTransaksi(Map<String, dynamic> t) {
 
     return CustomScrollView(
       slivers: [
-        // ── HEADER BIRU ──
         SliverToBoxAdapter(
           child: Container(
             color: const Color(0xFF6DB5FD),
@@ -417,12 +451,12 @@ void _editTransaksi(Map<String, dynamic> t) {
                       const Text(
                         "Transaksi",
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF012249),
                         ),
                       ),
-                      // ── Icon notifikasi dengan dot ──
+
                       GestureDetector(
                         onTap: () {
                           Navigator.push(
@@ -439,7 +473,7 @@ void _editTransaksi(Map<String, dynamic> t) {
                               ),
                             ),
                           ).then((_) {
-                            // Setelah balik dari halaman notifikasi, matikan dot
+
                             setState(() => hasNotification = false);
                           });
                         },
@@ -491,7 +525,7 @@ void _editTransaksi(Map<String, dynamic> t) {
 
                 const SizedBox(height: 12),
 
-                // ── Form Tambah Transaksi (dropdown → text field) ──
+                // Tambah Transaksi 
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Container(
@@ -513,14 +547,12 @@ void _editTransaksi(Map<String, dynamic> t) {
                         ),
                         const SizedBox(height: 10),
 
-                        // Row 1: jumlah + jenis
                           Row(
                             children: [
-                              // 💰 JUMLAH (lebih kecil)
                               Flexible(
                                 flex: 4,
                                 child: Container(
-                                  height: 48, // ⬅️ samain tinggi
+                                  height: 48, 
                                   padding: const EdgeInsets.symmetric(horizontal: 14),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFE3F2FD),
@@ -556,11 +588,10 @@ void _editTransaksi(Map<String, dynamic> t) {
 
                               const SizedBox(width: 8),
 
-                              // 🔽 DROPDOWN (lebih besar & tinggi sama)
                               Flexible(
                                 flex: 3,
                                 child: Container(
-                                  height: 48, // ⬅️ penting biar sama tinggi
+                                  height: 48,
                                   padding: const EdgeInsets.symmetric(horizontal: 10),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFE3F2FD),
@@ -569,7 +600,7 @@ void _editTransaksi(Map<String, dynamic> t) {
                                   child: DropdownButtonHideUnderline(
                                     child: DropdownButton<String>(
                                       value: selectedJenis,
-                                      isExpanded: true, // ⬅️ biar full lebar
+                                      isExpanded: true, 
                                       icon: const Icon(Icons.arrow_drop_down),
                                       items: ['pemasukan', 'pengeluaran']
                                           .map((e) => DropdownMenuItem(
@@ -593,18 +624,42 @@ void _editTransaksi(Map<String, dynamic> t) {
                           ),
                           const SizedBox(height: 8),
                           
-                        // Row 2: input kategori teks
                         Center(
                           child: SizedBox(
-                            width: 220, // ⬅️ atur lebar (bebas mau 200–260)
-                            child: _inputPill(
-                              controller: kategoriController,
-                              hintText: "Kategori (makan, gaji, dll)",
-                              keyboardType: TextInputType.text,
+                            width: 260, 
+                            child: Container(
+                              height: 48,
+                              padding: const EdgeInsets.symmetric(horizontal: 14),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE3F2FD),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.category_outlined,
+                                    color: Color(0xFF012249),
+                                    size: 18,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: TextField(
+                                      controller: kategoriController,
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        color: Color(0xFF012249),
+                                      ),
+                                      decoration: const InputDecoration(
+                                        border: InputBorder.none,
+                                        hintText: "Kategori (makan, gaji, dll)",
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 10),
 
                         Center(
                           child: ElevatedButton.icon(
@@ -633,7 +688,6 @@ void _editTransaksi(Map<String, dynamic> t) {
           ),
         ),
 
-        // ── AREA PUTIH ROUNDED ──
         SliverToBoxAdapter(
           child: ClipRRect(
             borderRadius: const BorderRadius.only(
@@ -731,45 +785,6 @@ void _editTransaksi(Map<String, dynamic> t) {
             _bottomNav(),
           ],
         ),
-      ),
-    );
-  }
-
-  // ── Helper: input pill (text field gaya pill) ──
-  Widget _inputPill({
-    required TextEditingController controller,
-    required String hintText,
-    String? prefixText,
-    TextInputType keyboardType = TextInputType.text,
-  }) {
-    return Container(
-      height: 38,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE3F2FD),
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Row(
-        children: [
-          if (prefixText != null)
-            Text(prefixText,
-                style: const TextStyle(color: Color(0xFF012249), fontSize: 13)),
-          Expanded(
-            child: TextField(
-              controller: controller,
-              keyboardType: keyboardType,
-              style: const TextStyle(fontSize: 13, color: Color(0xFF012249)),
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
-                hintText: hintText,
-                hintStyle: const TextStyle(
-                    fontSize: 12, color: Color(0xFF90A4AE)),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -893,7 +908,7 @@ void _editTransaksi(Map<String, dynamic> t) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.only(
-        top: 10,
+        top: 20,
         bottom: MediaQuery.of(context).padding.bottom + 10,
         left: 16,
         right: 16,
@@ -921,7 +936,7 @@ void _editTransaksi(Map<String, dynamic> t) {
               ),
               child: Center(
                 child: Icon(navItems[i],
-                    color: const Color(0xFF012249), size: 24),
+                    color: const Color(0xFF012249), size: 32),
               ),
             ),
           );

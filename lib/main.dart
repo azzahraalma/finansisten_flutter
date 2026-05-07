@@ -5,7 +5,7 @@ import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-  await initializeDateFormatting('id_ID', null); // 🔥 INI WAJIB
+  await initializeDateFormatting('id_ID', null); 
     FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   runApp(const MyApp());
 }

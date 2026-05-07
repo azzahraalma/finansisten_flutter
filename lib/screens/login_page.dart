@@ -16,7 +16,7 @@ class _LoginPageState extends State<LoginPage> {
   String email = '';
   String password = '';
   bool hidePassword = true;
-  bool isLoading = false; // 🔥 tambahan
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -79,11 +79,9 @@ class _LoginPageState extends State<LoginPage> {
 
                     /// LOGIN BUTTON
                     primaryButton("Masuk", () async {
-                      // 🔥 rapihin input
                       email = email.trim().toLowerCase();
                       password = password.trim();
 
-                      // ❌ validasi kosong
                       if (email.isEmpty || password.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -93,7 +91,6 @@ class _LoginPageState extends State<LoginPage> {
                         return;
                       }
 
-                      // ❌ validasi email
                       final emailRegex =
                           RegExp(r'^[^@]+@[^@]+\.[^@]+$');
                       if (!emailRegex.hasMatch(email)) {
@@ -105,13 +102,11 @@ class _LoginPageState extends State<LoginPage> {
                         return;
                       }
 
-                      // 🔄 loading ON
                       setState(() => isLoading = true);
 
                       bool success =
                           await auth.login(email, password);
 
-                      // 🔄 loading OFF
                       setState(() => isLoading = false);
 
                       if (success) {
@@ -246,7 +241,7 @@ class _LoginPageState extends State<LoginPage> {
         TextField(
           keyboardType: isPassword
               ? TextInputType.text
-              : TextInputType.emailAddress, // 🔥 UX fix
+              : TextInputType.emailAddress, 
           obscureText: isPassword ? hidePass : false,
           onChanged: onChanged,
           decoration: InputDecoration(
@@ -286,7 +281,7 @@ class _LoginPageState extends State<LoginPage> {
             shape: StadiumBorder(),
             padding: EdgeInsets.symmetric(vertical: 12),
           ),
-          onPressed: isLoading ? null : onPressed, // 🔥 disable
+          onPressed: isLoading ? null : onPressed, 
           child: isLoading
               ? SizedBox(
                   height: 18,

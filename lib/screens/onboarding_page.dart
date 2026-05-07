@@ -15,7 +15,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
 Future<void> _setOnboarded() async {
   final prefs = await SharedPreferences.getInstance();
-  await prefs.setBool('already_onboarded', true); // 👈 tandai sudah onboarding
+  await prefs.setBool('already_onboarded', true); 
 }
 
   @override
@@ -28,12 +28,12 @@ Future<void> _setOnboarded() async {
         children: [
           buildPage(
             title: "Selamat Datang Di\nFinansisten",
-            titleSize: 32,               // <-- ukuran beda
+            titleSize: 32,               
             image: ".idea/assets/img/coin.png",
           ),
           buildPage(
             title: "Asisten Finansial\nYang Bantuin Kamu",
-            titleSize: 30,               // <-- ukuran beda
+            titleSize: 30,               
             image: ".idea/assets/img/phone.png",
           ),
           buildLastPage(),
@@ -66,7 +66,7 @@ Future<void> _setOnboarded() async {
 
         SizedBox(height: 60),
 
-        // Box putih ukuran fixed, tidak auto
+
 
 Expanded(
   child: Container(
@@ -151,15 +151,14 @@ Expanded(
 }
 
   Widget buildLastPage() {
-    return Scaffold(                     // <-- full putih, no container
+    return Scaffold(                  
       backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Logo aplikasi
             Image.asset(
-              ".idea/assets/img/logo.png",   // <-- ganti ke logo kalau ada
+              ".idea/assets/img/logo.png",  
               width: 140,
               height: 140,
             ),
@@ -169,7 +168,7 @@ Expanded(
             Text(
               "Finansisten",
               style: TextStyle(
-                fontSize: 36,            // <-- gede
+                fontSize: 36,           
                 fontWeight: FontWeight.bold,
                 color: Color.fromARGB(255, 1, 34, 73),
               ),
@@ -181,7 +180,7 @@ Expanded(
               "Asisten Finansial-Mu\nBantu Kamu Lebih Hemat!",
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 20,            // <-- gede
+                fontSize: 20,         
                 color: Colors.grey,
               ),
             ),
@@ -189,7 +188,7 @@ Expanded(
             SizedBox(height: 40),
 
             primaryButton("Masuk", () async {
-              await _setOnboarded(); // 👈 simpan dulu
+              await _setOnboarded(); 
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (_) => LoginPage()),
@@ -199,7 +198,7 @@ Expanded(
             SizedBox(height: 12),
 
             secondaryButton("Daftar", () async {
-              await _setOnboarded(); // 👈 simpan dulu
+              await _setOnboarded(); 
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => RegisterPage()),

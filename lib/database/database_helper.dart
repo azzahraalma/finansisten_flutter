@@ -97,7 +97,7 @@ class DatabaseHelper {
     ''');
   }
 
-  // ===================== USER =====================
+  //  USER 
   Future<int> insertUser(Map<String, dynamic> user) async {
     final db = await database;
     return await db.insert('users', user);
@@ -116,7 +116,7 @@ class DatabaseHelper {
         where: 'id = ?', whereArgs: [user['id']]);
   }
 
-  // ===================== TRANSAKSI =====================
+  //  TRANSAKSI 
   Future<int> insertTransaksi(Map<String, dynamic> transaksi) async {
     final db = await database;
     return await db.insert('transaksi', transaksi);
@@ -144,7 +144,7 @@ class DatabaseHelper {
     return await db.delete('transaksi', where: 'id = ?', whereArgs: [id]);
   }
 
-  // ===================== KATEGORI =====================
+  //  KATEGORI 
   Future<int> insertKategori(Map<String, dynamic> kategori) async {
     final db = await database;
     return await db.insert('kategori_transaksi', kategori);
@@ -156,7 +156,7 @@ class DatabaseHelper {
         where: 'user_id = ?', whereArgs: [userId]);
   }
 
-  // ===================== BUDGET =====================
+  //  BUDGET 
   Future<int> insertBudget(Map<String, dynamic> budget) async {
     final db = await database;
     return await db.insert('budget', budget);
@@ -188,7 +188,7 @@ class DatabaseHelper {
     return await db.delete('budget', where: 'id = ?', whereArgs: [id]);
   }
 
-  // ===================== TABUNGAN =====================
+  // TABUNGAN 
   Future<int> insertTabungan(Map<String, dynamic> tabungan) async {
     final db = await database;
     return await db.insert('tabungan', tabungan);
@@ -211,7 +211,7 @@ class DatabaseHelper {
     return await db.delete('tabungan', where: 'id = ?', whereArgs: [id]);
   }
 
-  // ===================== LAPORAN =====================
+  //  LAPORAN 
   Future<List<Map<String, dynamic>>> getLaporanByPeriode(
       int userId, String dari, String sampai) async {
     final db = await database;

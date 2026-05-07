@@ -11,7 +11,7 @@ class NotifikasiPage extends StatelessWidget {
     required this.onClear,
   });
 
-  // ── Kelompokkan notifikasi ──
+  // Kelompokkan notifikasi
   Map<String, List<Map<String, dynamic>>> _grouped() {
     final sekarang = DateTime.now();
     final hariIni = DateTime(sekarang.year, sekarang.month, sekarang.day);
@@ -41,13 +41,11 @@ class NotifikasiPage extends StatelessWidget {
       }
     }
 
-    // hapus group kosong
     groups.removeWhere((key, value) => value.isEmpty);
 
     return groups;
   }
 
-  // ── Format waktu Indonesia ──
   String _formatTimestamp(String isoString) {
     final date = DateTime.parse(isoString);
     return DateFormat('HH:mm - d MMM', 'id_ID').format(date);
@@ -58,7 +56,7 @@ class NotifikasiPage extends StatelessWidget {
       case 'pengeluaran':
         return Icons.south_west;
       case 'pemasukan':
-        return Icons.north_east; // ⬅️ TAMBAH INI
+        return Icons.north_east; 
       case 'tabungan':
         return Icons.star_border;
       case 'pengingat':
@@ -78,13 +76,12 @@ Widget build(BuildContext context) {
       bottom: false,
       child: Column(
         children: [
-          // ===== HEADER =====
+          // HEADER
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // 🔁 BACK BUTTON (FIX)
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
                   child: const Icon(
@@ -103,13 +100,12 @@ Widget build(BuildContext context) {
                   ),
                 ),
 
-                // ❌ KOSONG (biar balance)
                 const SizedBox(width: 22),
               ],
             ),
           ),
 
-          // ===== BODY =====
+          // BODY
           Expanded(
             child: Container(
               margin: const EdgeInsets.only(top: 20),
@@ -156,7 +152,7 @@ Widget build(BuildContext context) {
 }
 
 
-  // ── TILE NOTIF ──
+  //  TILE NOTIF
   Widget _notifTile(Map<String, dynamic> notif) {
     final tipe = notif['tipe'];
     final judul = notif['judul'] ?? 'Transaksi';
@@ -244,7 +240,7 @@ Widget build(BuildContext context) {
     );
   }
 
-  // ── EMPTY STATE ──
+  // EMPTY STATE 
   Widget _buildEmpty() {
     return Center(
       child: Column(

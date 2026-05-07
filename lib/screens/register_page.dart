@@ -16,7 +16,7 @@ class _RegisterPageState extends State<RegisterPage> {
   String confirm = '';
   bool hidePassword = true;
   bool hideConfirm = true;
-  bool isLoading = false; // 🔥 tambahan
+  bool isLoading = false; 
 
   @override
   Widget build(BuildContext context) {
@@ -100,12 +100,10 @@ class _RegisterPageState extends State<RegisterPage> {
 
                     /// BUTTON DAFTAR
                     primaryButton("Daftar", () async {
-                      // 🔥 rapihin input
                       email = email.trim().toLowerCase();
                       password = password.trim();
                       confirm = confirm.trim();
 
-                      // ❌ validasi kosong
                       if (email.isEmpty ||
                           password.isEmpty ||
                           confirm.isEmpty) {
@@ -117,7 +115,6 @@ class _RegisterPageState extends State<RegisterPage> {
                         return;
                       }
 
-                      // ❌ validasi email
                       final emailRegex =
                           RegExp(r'^[^@]+@[^@]+\.[^@]+$');
                       if (!emailRegex.hasMatch(email)) {
@@ -129,7 +126,6 @@ class _RegisterPageState extends State<RegisterPage> {
                         return;
                       }
 
-                      // ❌ password minimal
                       if (password.length < 6) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -139,7 +135,6 @@ class _RegisterPageState extends State<RegisterPage> {
                         return;
                       }
 
-                      // ❌ konfirmasi password
                       if (password != confirm) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -149,13 +144,11 @@ class _RegisterPageState extends State<RegisterPage> {
                         return;
                       }
 
-                      // 🔄 loading ON
                       setState(() => isLoading = true);
 
                       bool success =
                           await auth.register(email, password);
 
-                      // 🔄 loading OFF
                       setState(() => isLoading = false);
 
                       if (success) {
@@ -176,7 +169,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
                     SizedBox(height: 10),
 
-                    /// GOOGLE ICON
                     Center(
                       child: Container(
                         width: 44,

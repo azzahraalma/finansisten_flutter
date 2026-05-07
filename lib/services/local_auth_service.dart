@@ -6,19 +6,19 @@ import '../database/database_helper.dart';
 class LocalAuthService {
   final db = DatabaseHelper.instance;
 
-  // ================= HASH FUNCTION =================
+  // HASH FUNCTION 
   String hashPassword(String password) {
     final bytes = utf8.encode(password);
     return sha256.convert(bytes).toString();
   }
 
-  // ================= VALIDASI EMAIL =================
+  // VALIDASI EMAIL 
   bool isValidEmail(String email) {
     final regex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
     return regex.hasMatch(email);
   }
 
-  // ================= REGISTER =================
+  // REGISTER
   Future<bool> register(String email, String password) async {
     try {
       email = email.toLowerCase().trim();
@@ -43,7 +43,7 @@ class LocalAuthService {
     }
   }
 
-  // ================= LOGIN =================
+  // LOGIN
   Future<bool> login(String email, String password) async {
     try {
       email = email.toLowerCase().trim();
@@ -66,19 +66,19 @@ class LocalAuthService {
     }
   }
 
-  // ================= LOGOUT =================
+  // LOGOUT
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
   }
 
-  // ================= CEK LOGIN =================
+  // CEK LOGIN
   Future<bool> isLoggedIn() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool('is_logged_in') ?? false;
   }
 
-  // ================= GET USER ID =================
+  // GET USER ID 
   Future<int?> getUserId() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getInt('user_id');

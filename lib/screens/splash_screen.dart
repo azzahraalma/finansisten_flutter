@@ -17,7 +17,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    FlutterNativeSplash.remove(); // hapus native splash
+    FlutterNativeSplash.remove(); 
     _navigate();
   }
 
@@ -47,7 +47,7 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
-              '.idea/assets/img/logo.png', // ⚠️ pastikan ini bener ya
+              '.idea/assets/img/logo.png', 
               width: 150,
             ),
             const SizedBox(height: 20),
