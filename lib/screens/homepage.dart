@@ -3,7 +3,6 @@ import '../database/database_helper.dart';
 import '../services/local_auth_service.dart';
 import 'package:intl/intl.dart';
 import 'budget_page.dart';
-import 'tabungan_page.dart';
 import 'laporan_page.dart';
 import 'profile_page.dart';
 import 'notifikasi_page.dart';
@@ -312,8 +311,7 @@ void _editTransaksi(Map<String, dynamic> t) {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14),
             decoration: BoxDecoration(
-              color: const Color(0xFFE3F2FD),
-              borderRadius: BorderRadius.circular(14),
+              color: Color.fromARGB(255, 201, 232, 255),              borderRadius: BorderRadius.circular(14),
             ),
             child: Row(
               children: [
@@ -555,7 +553,7 @@ void _editTransaksi(Map<String, dynamic> t) {
                                   height: 48, 
                                   padding: const EdgeInsets.symmetric(horizontal: 14),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFE3F2FD),
+                                    color: Color.fromARGB(255, 201, 232, 255),
                                     borderRadius: BorderRadius.circular(14),
                                   ),
                                   child: Row(
@@ -594,7 +592,7 @@ void _editTransaksi(Map<String, dynamic> t) {
                                   height: 48,
                                   padding: const EdgeInsets.symmetric(horizontal: 10),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFE3F2FD),
+                                    color: Color.fromARGB(255, 201, 232, 255),
                                     borderRadius: BorderRadius.circular(14),
                                   ),
                                   child: DropdownButtonHideUnderline(
@@ -631,7 +629,7 @@ void _editTransaksi(Map<String, dynamic> t) {
                               height: 48,
                               padding: const EdgeInsets.symmetric(horizontal: 14),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFE3F2FD),
+                                color: Color.fromARGB(255, 201, 232, 255),
                                 borderRadius: BorderRadius.circular(14),
                               ),
                               child: Row(
@@ -668,7 +666,7 @@ void _editTransaksi(Map<String, dynamic> t) {
                             label: const Text("Tambah",
                                 style: TextStyle(fontSize: 13)),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFE3F2FD),
+                              backgroundColor: Color.fromARGB(255, 201, 232, 255),
                               foregroundColor: const Color(0xFF012249),
                               elevation: 0,
                               shape: const StadiumBorder(),
@@ -769,7 +767,6 @@ void _editTransaksi(Map<String, dynamic> t) {
     final pages = [
       _buildTransaksiPage(),
       const BudgetPage(),
-      const TabunganPage(),
       const LaporanPage(),
       const ProfilePage(),
     ];
@@ -900,7 +897,6 @@ void _editTransaksi(Map<String, dynamic> t) {
     final navItems = [
       Icons.credit_card,
       Icons.calculate_outlined,
-      Icons.savings_outlined,
       Icons.list_alt_outlined,
       Icons.person_outline,
     ];
@@ -914,7 +910,7 @@ void _editTransaksi(Map<String, dynamic> t) {
         right: 16,
       ),
       decoration: const BoxDecoration(
-        color: Color(0xFF9ECFFA),
+        color: Color.fromARGB(255, 201, 232, 255),
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(45),
           topRight: Radius.circular(45),
