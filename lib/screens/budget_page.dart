@@ -169,19 +169,239 @@ class _BudgetPageState extends State<BudgetPage> {
                             'Pilih kategori',
                             style: TextStyle(fontSize: 14),
                           ),
-                          items: kategoriList
-                              .map((e) => DropdownMenuItem<int>(
-                                    value: e['id'] as int,
-                                    child: Text(
-                                      e['nama'] as String,
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        color: Color(0xFF012249),
+                          items: [
+                            ...kategoriList.map(
+                              (e) => DropdownMenuItem<int>(
+                                value: e['id'] as int,
+                                child: Text(
+                                  e['nama'] as String,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Color(0xFF012249),
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            const DropdownMenuItem<int>(
+                              value: -999,
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.add,
+                                    size: 18,
+                                    color: Color(0xFF012249),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    "Tambah Kategori",
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF012249),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+
+                          onChanged: (v) async {
+                            if (v == -999) {
+                              final controller = TextEditingController();
+
+                              final hasil = await showDialog<String>(
+                                context: context,
+                                barrierColor: Colors.black.withOpacity(0.35),
+                                builder: (context) {
+                                  return Dialog(
+                                    backgroundColor: Colors.transparent,
+                                    insetPadding:
+                                        const EdgeInsets.symmetric(horizontal: 28),
+                                    child: Container(
+                                      padding: const EdgeInsets.fromLTRB(
+                                          22, 24, 22, 22),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius:
+                                            BorderRadius.circular(30),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                                Colors.black.withOpacity(0.08),
+                                            blurRadius: 25,
+                                            offset: const Offset(0, 10),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Container(
+                                            width: 72,
+                                            height: 72,
+                                            decoration: BoxDecoration(
+                                              color: const Color.fromARGB(
+                                                  255, 201, 232, 255),
+                                              borderRadius:
+                                                  BorderRadius.circular(22),
+                                            ),
+                                            child: const Icon(
+                                              Icons.category_outlined,
+                                              size: 34,
+                                              color: Color(0xFF012249),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 18),
+
+                                          const Text(
+                                            "Tambah Kategori",
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight:
+                                                  FontWeight.bold,
+                                              color: Color(0xFF012249),
+                                            ),
+                                          ),
+
+                                          const SizedBox(height: 4),
+
+                                          const Text(
+                                            "untuk budget kamu",
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+
+                                          const SizedBox(height: 22),
+
+                                          Container(
+                                            padding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 16),
+                                            decoration: BoxDecoration(
+                                              color:
+                                                  const Color.fromARGB(
+                                                      255,
+                                                      201,
+                                                      232,
+                                                      255),
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      18),
+                                            ),
+                                            child: TextField(
+                                              controller: controller,
+                                              autofocus: true,
+                                              textAlignVertical: TextAlignVertical.center,
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                color: Color(0xFF012249),
+                                              ),
+                                              decoration: const InputDecoration(
+                                                border: InputBorder.none,
+                                                hintText: "Contoh: Hiburan",
+                                                hintStyle: TextStyle(
+                                                  color: Colors.grey,
+                                                  fontSize: 14,
+                                                ),
+
+                                                contentPadding: EdgeInsets.only(
+                                                  top: 16,
+                                                  bottom: 16,
+                                                ),
+
+                                                prefixIconConstraints: BoxConstraints(
+                                                  minWidth: 42,
+                                                  minHeight: 42,
+                                                ),
+
+                                                prefixIcon: Padding(
+                                                  padding: EdgeInsets.only(left: 4),
+                                                  child: Icon(
+                                                    Icons.edit_outlined,
+                                                    color: Color(0xFF012249),
+                                                    size: 20,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),                                          
+                                          ),
+
+                                          const SizedBox(height: 24),
+
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child:
+                                                    OutlinedButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(
+                                                          context),
+                                                  child:
+                                                      const Text(
+                                                          "Batal"),
+                                                ),
+                                              ),
+                                              const SizedBox(
+                                                  width: 12),
+                                              Expanded(
+                                                child:
+                                                    ElevatedButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(
+                                                    context,
+                                                    controller.text
+                                                        .trim(),
+                                                  ),
+                                                  style:
+                                                      ElevatedButton
+                                                          .styleFrom(
+                                                    backgroundColor:
+                                                        const Color(
+                                                            0xFF6DB5FD),
+                                                  ),
+                                                  child:
+                                                      const Text(
+                                                          "Tambah"),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                  ))
-                              .toList(),
-                          onChanged: (v) => setModal(() => selectedKategori = v),
+                                  );
+                                },
+                              );
+
+                              if (hasil != null &&
+                                  hasil.isNotEmpty) {
+                                final userId =
+                                    await auth.getUserId();
+
+                                if (userId != null) {
+                                  final newId =
+                                      await db.insertKategori({
+                                    'user_id': userId,
+                                    'nama': hasil,
+                                    'jenis': 'pengeluaran',
+                                  });
+
+                                  await _loadData();
+
+                                  setModal(() {
+                                    selectedKategori = newId;
+                                  });
+                                }
+                              }
+                            } else {
+                              setModal(() {
+                                selectedKategori = v;
+                              });
+                            }
+                          },
                         ),
                       ),
                     ),
@@ -260,7 +480,7 @@ class _BudgetPageState extends State<BudgetPage> {
                         decoration: const InputDecoration(
                           border: InputBorder.none,
                           hintText: 'Contoh: 1, 2, 3...',
-                          hintStyle: TextStyle(fontSize: 13, color: Color.fromARGB(255, 2, 1, 64)),
+                          hintStyle: TextStyle(fontSize: 13, color: Color.fromARGB(255, 131, 131, 142)),
                           contentPadding: EdgeInsets.symmetric(vertical: 14),
                         ),
                       ),
