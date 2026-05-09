@@ -340,61 +340,58 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
                 child: Column(
                   crossAxisAlignment:
                       CrossAxisAlignment.start,
-
-                  children: [
-                    Text(
-                      judul,
-
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                        color: Color(0xFF012249),
-                      ),
-                    ),
-
-                    const SizedBox(height: 2),
-
-                    Text(
-                      pesan,
-
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF666666),
-                      ),
-                    ),
-
-                    if (detail.isNotEmpty) ...[
-                      const SizedBox(height: 2),
-
-                      Text(
-                        detail,
-
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                          color: Color(0xFF012249),
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          judul,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: Color(0xFF012249),
+                          ),
                         ),
                       ),
-                    ],
 
-                    const SizedBox(height: 6),
+                      const SizedBox(width: 8),
 
-                    Align(
-                      alignment: Alignment.centerRight,
-
-                      child: Text(
+                      Text(
                         timestamp,
-
                         style: const TextStyle(
                           fontSize: 11,
+                          fontWeight: FontWeight.w500,
                           color: Color(0xFF6DB5FD),
                         ),
                       ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  Text(
+                    pesan,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF666666),
+                    ),
+                  ),
+
+                  if (detail.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      detail,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                        color: Color(0xFF012249),
+                      ),
                     ),
                   ],
+                ],                  
                 ),
               ),
             ],
