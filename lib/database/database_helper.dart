@@ -3,24 +3,45 @@ import 'package:path/path.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
+
   static Database? _database;
 
   DatabaseHelper._init();
 
+  // =========================
+  // DATABASE
+  // =========================
+
   Future<Database> get database async {
     if (_database != null) return _database!;
+
     _database = await _initDB('finansisten.db');
+
     return _database!;
   }
 
   Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
+
     final path = join(dbPath, filePath);
-    return await openDatabase(path, version: 1, onCreate: _createDB);
+
+    return await openDatabase(
+      path,
+      version: 4,
+      onCreate: _createDB,
+      onUpgrade: _onUpgrade,
+    );
   }
 
+  // =========================
+  // CREATE DATABASE
+  // =========================
+
   Future _createDB(Database db, int version) async {
+    // =========================
     // TABLE USER
+    // =========================
+
     await db.execute('''
       CREATE TABLE users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,58 +52,88 @@ class DatabaseHelper {
       )
     ''');
 
+    // =========================
     // TABLE KATEGORI TRANSAKSI
+    // =========================
+
     await db.execute('''
       CREATE TABLE kategori_transaksi (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
         nama TEXT NOT NULL,
-        jenis TEXT NOT NULL CHECK(jenis IN ('pemasukan', 'pengeluaran')),
+        jenis TEXT NOT NULL CHECK(
+          jenis IN ('pemasukan', 'pengeluaran')
+        ),
         FOREIGN KEY (user_id) REFERENCES users(id)
       )
     ''');
 
+    // =========================
     // TABLE TRANSAKSI
+    // =========================
+
     await db.execute('''
       CREATE TABLE transaksi (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
         kategori_id INTEGER NOT NULL,
         jumlah REAL NOT NULL,
-        jenis TEXT NOT NULL CHECK(jenis IN ('pemasukan', 'pengeluaran')),
+        jenis TEXT NOT NULL CHECK(
+          jenis IN ('pemasukan', 'pengeluaran')
+        ),
         catatan TEXT,
         tanggal TEXT NOT NULL,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id),
-        FOREIGN KEY (kategori_id) REFERENCES kategori_transaksi(id)
+
+        FOREIGN KEY (user_id)
+          REFERENCES users(id),
+
+        FOREIGN KEY (kategori_id)
+          REFERENCES kategori_transaksi(id)
       )
     ''');
 
+    // =========================
     // TABLE BUDGET
+    // =========================
+
     await db.execute('''
       CREATE TABLE budget (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
         kategori_id INTEGER NOT NULL,
         limit_amount REAL NOT NULL,
+        priority INTEGER DEFAULT 1,
         periode TEXT NOT NULL,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id),
-        FOREIGN KEY (kategori_id) REFERENCES kategori_transaksi(id)
+
+        FOREIGN KEY (user_id)
+          REFERENCES users(id),
+
+        FOREIGN KEY (kategori_id)
+          REFERENCES kategori_transaksi(id)
       )
     ''');
 
+    // =========================
     // TABLE PRIORITAS BUDGET
+    // =========================
+
     await db.execute('''
       CREATE TABLE prioritas_budget (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         budget_id INTEGER NOT NULL,
         urutan INTEGER NOT NULL,
-        FOREIGN KEY (budget_id) REFERENCES budget(id)
+
+        FOREIGN KEY (budget_id)
+          REFERENCES budget(id)
       )
     ''');
 
+    // =========================
     // TABLE TABUNGAN
+    // =========================
+
     await db.execute('''
       CREATE TABLE tabungan (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -92,153 +143,563 @@ class DatabaseHelper {
         current_amount REAL DEFAULT 0,
         deadline TEXT,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id)
+
+        FOREIGN KEY (user_id)
+          REFERENCES users(id)
+      )
+    ''');
+
+    // =========================
+    // TABLE NOTIFICATIONS
+    // =========================
+
+    await db.execute('''
+      CREATE TABLE notifications (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tipe TEXT,
+        judul TEXT,
+        pesan TEXT,
+        detail TEXT,
+        waktu TEXT,
+        is_read INTEGER DEFAULT 0
       )
     ''');
   }
 
-  //  USER 
-  Future<int> insertUser(Map<String, dynamic> user) async {
-    final db = await database;
-    return await db.insert('users', user);
+  // =========================
+  // ON UPGRADE
+  // =========================
+
+  Future<void> _onUpgrade(
+    Database db,
+    int oldVersion,
+    int newVersion,
+  ) async {
+    if (oldVersion < 4) {
+      await db.execute('''
+        CREATE TABLE notifications (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          tipe TEXT,
+          judul TEXT,
+          pesan TEXT,
+          detail TEXT,
+          waktu TEXT,
+          is_read INTEGER DEFAULT 0
+        )
+      ''');
+    }
   }
 
-  Future<Map<String, dynamic>?> getUserByEmail(String email) async {
+  // =========================
+  // USER
+  // =========================
+
+  Future<int> insertUser(
+    Map<String, dynamic> user,
+  ) async {
     final db = await database;
-    final result = await db.query('users',
-        where: 'email = ?', whereArgs: [email]);
-    return result.isNotEmpty ? result.first : null;
+
+    return await db.insert(
+      'users',
+      user,
+    );
   }
 
-  Future<int> updateUser(Map<String, dynamic> user) async {
+  Future<Map<String, dynamic>?> getUserByEmail(
+    String email,
+  ) async {
     final db = await database;
-    return await db.update('users', user,
-        where: 'id = ?', whereArgs: [user['id']]);
+
+    final result = await db.query(
+      'users',
+      where: 'email = ?',
+      whereArgs: [email],
+    );
+
+    return result.isNotEmpty
+        ? result.first
+        : null;
   }
 
-  //  TRANSAKSI 
-  Future<int> insertTransaksi(Map<String, dynamic> transaksi) async {
-    final db = await database;
-    return await db.insert('transaksi', transaksi);
+Future<int> updateUser(
+  Map<String, dynamic> user,
+) async {
+
+  final db = await database;
+
+  final existing = await db.query(
+    'users',
+    where: 'id = ?',
+    whereArgs: [user['id']],
+  );
+
+  if (existing.isEmpty) {
+    return 0;
   }
 
-  Future<List<Map<String, dynamic>>> getTransaksiByUser(int userId) async {
+  final oldData = existing.first;
+
+  final updatedData = {
+    'username':
+        user['username'] ?? oldData['username'],
+
+    'email':
+        user['email'] ?? oldData['email'],
+
+    'password':
+        user['password'] ?? oldData['password'],
+  };
+
+  return await db.update(
+    'users',
+    updatedData,
+    where: 'id = ?',
+    whereArgs: [user['id']],
+  );
+}
+
+  // =========================
+  // TRANSAKSI
+  // =========================
+
+  Future<int> insertTransaksi(
+    Map<String, dynamic> transaksi,
+  ) async {
     final db = await database;
+
+    return await db.insert(
+      'transaksi',
+      transaksi,
+    );
+  }
+
+  Future<List<Map<String, dynamic>>>
+      getTransaksiByUser(
+    int userId,
+  ) async {
+    final db = await database;
+
     return await db.rawQuery('''
-      SELECT t.*, k.nama as kategori_nama 
+      SELECT
+        t.*,
+        k.nama as kategori_nama
+
       FROM transaksi t
-      JOIN kategori_transaksi k ON t.kategori_id = k.id
+
+      JOIN kategori_transaksi k
+        ON t.kategori_id = k.id
+
       WHERE t.user_id = ?
+
       ORDER BY t.tanggal DESC
     ''', [userId]);
   }
 
-  Future<int> updateTransaksi(Map<String, dynamic> transaksi) async {
+  Future<int> updateTransaksi(
+    Map<String, dynamic> transaksi,
+  ) async {
     final db = await database;
-    return await db.update('transaksi', transaksi,
-        where: 'id = ?', whereArgs: [transaksi['id']]);
+
+    return await db.update(
+      'transaksi',
+      transaksi,
+      where: 'id = ?',
+      whereArgs: [transaksi['id']],
+    );
   }
 
-  Future<int> deleteTransaksi(int id) async {
+  Future<int> deleteTransaksi(
+    int id,
+  ) async {
     final db = await database;
-    return await db.delete('transaksi', where: 'id = ?', whereArgs: [id]);
+
+    return await db.delete(
+      'transaksi',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
-  //  KATEGORI 
-  Future<int> insertKategori(Map<String, dynamic> kategori) async {
+  // =========================
+  // KATEGORI
+  // =========================
+
+  Future<int> insertKategori(
+    Map<String, dynamic> kategori,
+  ) async {
     final db = await database;
-    return await db.insert('kategori_transaksi', kategori);
+
+    final nama = kategori['nama']
+        .toString()
+        .trim();
+
+    final jenis = kategori['jenis']
+        .toString()
+        .toLowerCase()
+        .trim();
+
+    final existing = await db.query(
+      'kategori_transaksi',
+
+      where:
+          'user_id = ? AND LOWER(TRIM(nama)) = ? AND LOWER(TRIM(jenis)) = ?',
+
+      whereArgs: [
+        kategori['user_id'],
+        nama.toLowerCase(),
+        jenis,
+      ],
+    );
+
+    if (existing.isNotEmpty) {
+      return (existing.first['id'] as num)
+          .toInt();
+    }
+
+    return await db.insert(
+      'kategori_transaksi',
+      {
+        ...kategori,
+        'nama': nama,
+        'jenis': jenis,
+      },
+    );
   }
 
-  Future<List<Map<String, dynamic>>> getKategoriByUser(int userId) async {
+  Future<List<Map<String, dynamic>>>
+      getKategoriByUser(
+    int userId, {
+    String? jenis,
+  }) async {
     final db = await database;
-    return await db.query('kategori_transaksi',
-        where: 'user_id = ?', whereArgs: [userId]);
+
+    if (jenis != null) {
+      return await db.query(
+        'kategori_transaksi',
+
+        where:
+            'user_id = ? AND LOWER(TRIM(jenis)) = ?',
+
+        whereArgs: [
+          userId,
+          jenis.toLowerCase().trim(),
+        ],
+
+        orderBy: 'nama ASC',
+      );
+    }
+
+    return await db.query(
+      'kategori_transaksi',
+      where: 'user_id = ?',
+      whereArgs: [userId],
+      orderBy: 'nama ASC',
+    );
   }
 
-  //  BUDGET 
-  Future<int> insertBudget(Map<String, dynamic> budget) async {
+  // =========================
+  // BUDGET
+  // =========================
+
+  Future<int> insertBudget(
+    Map<String, dynamic> budget,
+  ) async {
     final db = await database;
-    return await db.insert('budget', budget);
+
+    final existing = await db.query(
+      'budget',
+
+      where:
+          'user_id = ? AND kategori_id = ?',
+
+      whereArgs: [
+        budget['user_id'],
+        budget['kategori_id'],
+      ],
+    );
+
+    if (existing.isNotEmpty) {
+      throw Exception(
+        'Budget kategori sudah ada',
+      );
+    }
+
+    return await db.insert(
+      'budget',
+      budget,
+    );
   }
 
-  Future<List<Map<String, dynamic>>> getBudgetByUser(int userId) async {
+  Future<List<Map<String, dynamic>>>
+      getBudgetByUser(
+    int userId,
+  ) async {
     final db = await database;
+
     return await db.rawQuery('''
-      SELECT b.*, k.nama as kategori_nama,
-             COALESCE(SUM(t.jumlah), 0) as total_spent
+      SELECT
+        b.id,
+        b.user_id,
+        b.kategori_id,
+        b.limit_amount,
+        b.priority,
+        b.periode,
+
+        k.nama as kategori_nama,
+
+        COALESCE(
+          SUM(
+            CASE
+              WHEN LOWER(TRIM(t.jenis))
+                = 'pengeluaran'
+
+              THEN t.jumlah
+
+              ELSE 0
+            END
+          ),
+        0) as total_spent
+
       FROM budget b
-      JOIN kategori_transaksi k ON b.kategori_id = k.id
-      LEFT JOIN transaksi t ON t.kategori_id = b.kategori_id 
+
+      JOIN kategori_transaksi k
+        ON k.id = b.kategori_id
+
+      LEFT JOIN transaksi t
+        ON t.kategori_id = b.kategori_id
         AND t.user_id = b.user_id
-        AND t.jenis = 'pengeluaran'
+
       WHERE b.user_id = ?
+
       GROUP BY b.id
+
+      ORDER BY b.priority ASC
     ''', [userId]);
   }
 
-  Future<int> updateBudget(Map<String, dynamic> budget) async {
+  Future<int> updateBudget(
+    Map<String, dynamic> budget,
+  ) async {
     final db = await database;
-    return await db.update('budget', budget,
-        where: 'id = ?', whereArgs: [budget['id']]);
+
+    return await db.update(
+      'budget',
+      budget,
+      where: 'id = ?',
+      whereArgs: [budget['id']],
+    );
   }
 
-  Future<int> deleteBudget(int id) async {
+  Future<int> deleteBudget(
+    int id,
+  ) async {
     final db = await database;
-    return await db.delete('budget', where: 'id = ?', whereArgs: [id]);
+
+    return await db.delete(
+      'budget',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
-  // TABUNGAN 
-  Future<int> insertTabungan(Map<String, dynamic> tabungan) async {
+  // =========================
+  // TABUNGAN
+  // =========================
+
+  Future<int> insertTabungan(
+    Map<String, dynamic> tabungan,
+  ) async {
     final db = await database;
-    return await db.insert('tabungan', tabungan);
+
+    return await db.insert(
+      'tabungan',
+      tabungan,
+    );
   }
 
-  Future<List<Map<String, dynamic>>> getTabunganByUser(int userId) async {
+  Future<List<Map<String, dynamic>>>
+      getTabunganByUser(
+    int userId,
+  ) async {
     final db = await database;
-    return await db.query('tabungan',
-        where: 'user_id = ?', whereArgs: [userId]);
+
+    return await db.query(
+      'tabungan',
+      where: 'user_id = ?',
+      whereArgs: [userId],
+    );
   }
 
-  Future<int> updateTabungan(Map<String, dynamic> tabungan) async {
+  Future<int> updateTabungan(
+    Map<String, dynamic> tabungan,
+  ) async {
     final db = await database;
-    return await db.update('tabungan', tabungan,
-        where: 'id = ?', whereArgs: [tabungan['id']]);
+
+    return await db.update(
+      'tabungan',
+      tabungan,
+      where: 'id = ?',
+      whereArgs: [tabungan['id']],
+    );
   }
 
-  Future<int> deleteTabungan(int id) async {
+  Future<int> deleteTabungan(
+    int id,
+  ) async {
     final db = await database;
-    return await db.delete('tabungan', where: 'id = ?', whereArgs: [id]);
+
+    return await db.delete(
+      'tabungan',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
-  //  LAPORAN 
-  Future<List<Map<String, dynamic>>> getLaporanByPeriode(
-      int userId, String dari, String sampai) async {
+  // =========================
+  // NOTIFICATIONS
+  // =========================
+
+  Future<int> insertNotification(
+    Map<String, dynamic> notif,
+  ) async {
     final db = await database;
+
+    return await db.insert(
+      'notifications',
+      notif,
+    );
+  }
+
+  Future<List<Map<String, dynamic>>>
+      getNotifications() async {
+    final db = await database;
+
+    return await db.query(
+      'notifications',
+      orderBy: 'waktu DESC',
+    );
+  }
+
+  Future<int> deleteNotification(
+    int id,
+  ) async {
+    final db = await database;
+
+    return await db.delete(
+      'notifications',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<int> clearNotifications() async {
+    final db = await database;
+
+    return await db.delete(
+      'notifications',
+    );
+  }
+
+  Future<int> markNotificationAsRead(
+    int id,
+  ) async {
+    final db = await database;
+
+    return await db.update(
+      'notifications',
+      {
+        'is_read': 1,
+      },
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<int> unreadNotificationCount()
+      async {
+    final db = await database;
+
+    final result = await db.rawQuery('''
+      SELECT COUNT(*) as total
+      FROM notifications
+      WHERE is_read = 0
+    ''');
+
+    return Sqflite.firstIntValue(result) ?? 0;
+  }
+
+  // =========================
+  // LAPORAN
+  // =========================
+
+  Future<List<Map<String, dynamic>>>
+      getLaporanByPeriode(
+    int userId,
+    String dari,
+    String sampai,
+  ) async {
+    final db = await database;
+
     return await db.rawQuery('''
-      SELECT t.*, k.nama as kategori_nama
+      SELECT
+        t.*,
+        k.nama as kategori_nama
+
       FROM transaksi t
-      JOIN kategori_transaksi k ON t.kategori_id = k.id
-      WHERE t.user_id = ? AND t.tanggal BETWEEN ? AND ?
+
+      JOIN kategori_transaksi k
+        ON t.kategori_id = k.id
+
+      WHERE t.user_id = ?
+        AND t.tanggal BETWEEN ? AND ?
+
       ORDER BY t.tanggal DESC
     ''', [userId, dari, sampai]);
   }
 
-  Future<Map<String, dynamic>> getSummaryLaporan(
-      int userId, String dari, String sampai) async {
+  Future<Map<String, dynamic>>
+      getSummaryLaporan(
+    int userId,
+    String dari,
+    String sampai,
+  ) async {
     final db = await database;
+
     final result = await db.rawQuery('''
-      SELECT 
-        SUM(CASE WHEN jenis = 'pemasukan' THEN jumlah ELSE 0 END) as total_pemasukan,
-        SUM(CASE WHEN jenis = 'pengeluaran' THEN jumlah ELSE 0 END) as total_pengeluaran
+      SELECT
+
+      SUM(
+        CASE
+          WHEN jenis = 'pemasukan'
+          THEN jumlah
+          ELSE 0
+        END
+      ) as total_pemasukan,
+
+      SUM(
+        CASE
+          WHEN jenis = 'pengeluaran'
+          THEN jumlah
+          ELSE 0
+        END
+      ) as total_pengeluaran
+
       FROM transaksi
-      WHERE user_id = ? AND tanggal BETWEEN ? AND ?
+
+      WHERE user_id = ?
+        AND tanggal BETWEEN ? AND ?
     ''', [userId, dari, sampai]);
+
     return result.first;
   }
 
+  // =========================
+  // CLOSE DATABASE
+  // =========================
+
   Future<void> close() async {
     final db = await database;
+
     db.close();
   }
 }

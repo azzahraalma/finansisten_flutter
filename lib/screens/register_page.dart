@@ -24,7 +24,7 @@ class _RegisterPageState extends State<RegisterPage> {
       backgroundColor: Color(0xFF6DB5FD),
       body: Column(
         children: [
-          SizedBox(height: 80),
+          SizedBox(height: 60),
           Text(
             "Daftar",
             style: TextStyle(
@@ -46,7 +46,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(height: 40),
+                    SizedBox(height: 12),
 
                     /// EMAIL
                     labeledInput(
@@ -166,30 +166,6 @@ class _RegisterPageState extends State<RegisterPage> {
                         );
                       }
                     }),
-
-                    SizedBox(height: 10),
-
-                    Center(
-                      child: Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                              color: Colors.grey.shade300),
-                        ),
-                        child: Center(
-                          child: Text(
-                            "G",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
 
                     SizedBox(height: 15),
 

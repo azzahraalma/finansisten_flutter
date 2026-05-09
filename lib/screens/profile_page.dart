@@ -4,6 +4,7 @@ import 'dart:io';
 
 import '../database/database_helper.dart';
 import '../services/local_auth_service.dart';
+import 'login_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -12,11 +13,11 @@ class ProfilePage extends StatefulWidget {
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
-bool showPassword = false;
-
 class _ProfilePageState extends State<ProfilePage> {
   final db = DatabaseHelper.instance;
   final auth = LocalAuthService();
+
+  bool showPassword = false;
 
   Map<String, dynamic>? userData;
 
@@ -35,6 +36,7 @@ class _ProfilePageState extends State<ProfilePage> {
   void initState() {
     super.initState();
     _loadUser();
+    _loadProfileImage();
   }
 
   @override
@@ -60,17 +62,34 @@ class _ProfilePageState extends State<ProfilePage> {
     );
 
     if (result.isNotEmpty) {
+      final raw = Map<String, dynamic>.from(result.first);
+
+      // FIX: trim semua field string supaya tidak ada karakter aneh
+      final cleaned = {
+        ...raw,
+        'username': raw['username']?.toString().trim() ?? '',
+        'email': raw['email']?.toString().trim() ?? '',
+        'password': raw['password']?.toString().trim() ?? '',
+      };
+
       setState(() {
-        userData = result.first;
-
-        usernameController.text =
-            userData!['username'].toString();
-
-        emailController.text =
-            userData!['email'].toString();
-
+        userData = cleaned;
+        usernameController.text = cleaned['username'];
+        emailController.text = cleaned['email'];
         isLoading = false;
       });
+    }
+  }
+
+  // ================= LOAD PROFILE IMAGE =================
+
+  Future<void> _loadProfileImage() async {
+    final path = await auth.getProfileImage();
+    if (path != null) {
+      final file = File(path);
+      if (await file.exists()) {
+        setState(() => profileImagePath = path);
+      }
     }
   }
 
@@ -87,76 +106,61 @@ class _ProfilePageState extends State<ProfilePage> {
     );
 
     if (picked != null) {
-      setState(() {
-        profileImagePath = picked.path;
-      });
+      // Simpan path ke SharedPreferences supaya persisten
+      await auth.saveProfileImage(picked.path);
+      setState(() => profileImagePath = picked.path);
     }
   }
 
   // ================= UPDATE PROFILE =================
 
-Future<void> _updateProfil() async {
-  final userId = await auth.getUserId();
+  Future<void> _updateProfil() async {
+    final userId = await auth.getUserId();
 
-  if (userId == null) return;
+    if (userId == null) return;
 
-  final username = usernameController.text.trim();
-  final email = emailController.text.trim();
+    final username = usernameController.text.trim();
+    final email = emailController.text.trim();
 
-  if (username.isEmpty) {
-    _showTopSnack(
-      "Username tidak boleh kosong",
-      isError: true,
-    );
-    return;
-  }
+    if (username.isEmpty) {
+      _showTopSnack("Username tidak boleh kosong", isError: true);
+      return;
+    }
 
-  if (email.isEmpty) {
-    _showTopSnack(
-      "Email tidak boleh kosong",
-      isError: true,
-    );
-    return;
-  }
+    if (email.isEmpty) {
+      _showTopSnack("Email tidak boleh kosong", isError: true);
+      return;
+    }
 
-  final emailRegex = RegExp(
-    r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-  );
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
 
-  if (!emailRegex.hasMatch(email)) {
-    _showTopSnack(
-      "Format email tidak valid",
-      isError: true,
-    );
-    return;
-  }
+    if (!emailRegex.hasMatch(email)) {
+      _showTopSnack("Format email tidak valid", isError: true);
+      return;
+    }
 
-  await db.updateUser({
-    'id': userId,
-    'username': username,
-    'email': email,
-  });
-
-  setState(() {
-    userData = {
-      ...?userData,
+    await db.updateUser({
+      'id': userId,
       'username': username,
       'email': email,
-    };
+    });
 
-    isEditingUsername = false;
-    isEditingEmail = false;
-  });
+    setState(() {
+      userData = {
+        ...?userData,
+        'username': username,
+        'email': email,
+      };
+      isEditingUsername = false;
+      isEditingEmail = false;
+    });
 
-  _showTopSnack("Profil berhasil diperbarui");
-}
+    _showTopSnack("Profil berhasil diperbarui");
+  }
 
   // ================= TOP SNACK =================
 
-  void _showTopSnack(
-    String msg, {
-    bool isError = false,
-  }) {
+  void _showTopSnack(String msg, {bool isError = false}) {
     final overlay = Overlay.of(context);
 
     late OverlayEntry entry;
@@ -169,14 +173,9 @@ Future<void> _updateProfil() async {
         child: Material(
           color: Colors.transparent,
           child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 18,
-              vertical: 16,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
             decoration: BoxDecoration(
-              color: isError
-                  ? Colors.red
-                  : const Color(0xFF4A90D9),
+              color: isError ? Colors.red : const Color(0xFF4A90D9),
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
@@ -199,12 +198,9 @@ Future<void> _updateProfil() async {
 
     overlay.insert(entry);
 
-    Future.delayed(
-      const Duration(seconds: 2),
-      () {
-        entry.remove();
-      },
-    );
+    Future.delayed(const Duration(seconds: 2), () {
+      entry.remove();
+    });
   }
 
   // ================= DIALOG GANTI PASSWORD =================
@@ -212,8 +208,7 @@ Future<void> _updateProfil() async {
   void _showGantiPasswordDialog() {
     final oldPassController = TextEditingController();
     final newPassController = TextEditingController();
-    final confirmPassController =
-        TextEditingController();
+    final confirmPassController = TextEditingController();
 
     bool obscureOld = true;
     bool obscureNew = true;
@@ -230,24 +225,19 @@ Future<void> _updateProfil() async {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
               ),
-              insetPadding: const EdgeInsets.symmetric(
-                horizontal: 28,
-              ),
+              insetPadding: const EdgeInsets.symmetric(horizontal: 28),
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // HEADER
                     Row(
-                      mainAxisAlignment:
-                          MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
+                        const Text(
                           "Ganti Password",
-                          textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -255,13 +245,11 @@ Future<void> _updateProfil() async {
                           ),
                         ),
                         GestureDetector(
-                          onTap: () =>
-                              Navigator.pop(ctx),
+                          onTap: () => Navigator.pop(ctx),
                           child: Container(
                             width: 34,
                             height: 34,
-                            decoration:
-                                const BoxDecoration(
+                            decoration: const BoxDecoration(
                               color: Color(0xFFE3F2FD),
                               shape: BoxShape.circle,
                             ),
@@ -277,7 +265,6 @@ Future<void> _updateProfil() async {
 
                     const SizedBox(height: 24),
 
-                    // PASSWORD LAMA
                     const Text(
                       "Password Lama",
                       style: TextStyle(
@@ -285,22 +272,15 @@ Future<void> _updateProfil() async {
                         color: Color(0xFF012249),
                       ),
                     ),
-
                     const SizedBox(height: 8),
-
                     _passwordField(
                       controller: oldPassController,
                       obscure: obscureOld,
-                      onToggle: () {
-                        setDialog(() {
-                          obscureOld = !obscureOld;
-                        });
-                      },
+                      onToggle: () => setDialog(() => obscureOld = !obscureOld),
                     ),
 
                     const SizedBox(height: 16),
 
-                    // PASSWORD BARU
                     const Text(
                       "Password Baru",
                       style: TextStyle(
@@ -308,22 +288,15 @@ Future<void> _updateProfil() async {
                         color: Color(0xFF012249),
                       ),
                     ),
-
                     const SizedBox(height: 8),
-
                     _passwordField(
                       controller: newPassController,
                       obscure: obscureNew,
-                      onToggle: () {
-                        setDialog(() {
-                          obscureNew = !obscureNew;
-                        });
-                      },
+                      onToggle: () => setDialog(() => obscureNew = !obscureNew),
                     ),
 
                     const SizedBox(height: 16),
 
-                    // KONFIRMASI
                     const Text(
                       "Konfirmasi Password",
                       style: TextStyle(
@@ -331,135 +304,88 @@ Future<void> _updateProfil() async {
                         color: Color(0xFF012249),
                       ),
                     ),
-
                     const SizedBox(height: 8),
-
                     _passwordField(
-                      controller:
-                          confirmPassController,
+                      controller: confirmPassController,
                       obscure: obscureConfirm,
-                      onToggle: () {
-                        setDialog(() {
-                          obscureConfirm =
-                              !obscureConfirm;
-                        });
-                      },
+                      onToggle: () =>
+                          setDialog(() => obscureConfirm = !obscureConfirm),
                     ),
 
                     const SizedBox(height: 28),
 
-                    // BUTTON
                     Center(
                       child: SizedBox(
                         width: 210,
                         child: ElevatedButton(
                           onPressed: () async {
-                            final oldPass =
-                                oldPassController.text
-                                    .trim();
+                            final oldPass = oldPassController.text.trim();
+                            final newPass = newPassController.text.trim();
+                            final confirmPass = confirmPassController.text.trim();
 
-                            final newPass =
-                                newPassController.text
-                                    .trim();
+                            // FIX: bandingkan dengan hash karena password disimpan sebagai SHA256
+                            final currentHashedPassword =
+                                userData?['password']?.toString().trim() ?? '';
+                            final oldPassHashed = auth.hashPassword(oldPass);
 
-                            final confirmPass =
-                                confirmPassController
-                                    .text
-                                    .trim();
-
-                            final currentPassword =
-                                userData?['password']
-                                        ?.toString() ??
-                                    '';
-
-                            // VALIDASI
                             if (oldPass.isEmpty ||
                                 newPass.isEmpty ||
                                 confirmPass.isEmpty) {
-                              _showTopSnack(
-                                "Isi semua field password",
-                                isError: true,
-                              );
+                              _showTopSnack("Isi semua field password",
+                                  isError: true);
                               return;
                             }
 
-                            // PASSWORD LAMA
-                            if (oldPass !=
-                                currentPassword) {
-                              _showTopSnack(
-                                "Password lama salah",
-                                isError: true,
-                              );
+                            if (oldPassHashed != currentHashedPassword) {
+                              _showTopSnack("Password lama salah", isError: true);
                               return;
                             }
 
-                            // PASSWORD COCOK
-                            if (newPass !=
-                                confirmPass) {
-                              _showTopSnack(
-                                "Password tidak cocok",
-                                isError: true,
-                              );
+                            if (newPass != confirmPass) {
+                              _showTopSnack("Password tidak cocok", isError: true);
                               return;
                             }
 
-                            // MINIMAL
                             if (newPass.length < 6) {
-                              _showTopSnack(
-                                "Password minimal 6 karakter",
-                                isError: true,
-                              );
+                              _showTopSnack("Password minimal 6 karakter",
+                                  isError: true);
                               return;
                             }
 
-                            final userId =
-                                await auth.getUserId();
-
+                            final userId = await auth.getUserId();
                             if (userId == null) return;
+
+                            // FIX: hash password baru sebelum disimpan
+                            final newPassHashed = auth.hashPassword(newPass);
 
                             await db.updateUser({
                               'id': userId,
-                              'password': newPass,
+                              'password': newPassHashed,
                             });
 
                             setState(() {
                               userData = {
                                 ...?userData,
-                                'password': newPass,
+                                'password': newPassHashed,
                               };
                             });
 
                             Navigator.pop(ctx);
-
-                            _showTopSnack(
-                              "Password berhasil diperbarui",
-                            );
+                            _showTopSnack("Password berhasil diperbarui");
                           },
-                          style:
-                              ElevatedButton.styleFrom(
-                            backgroundColor:
-                                const Color(
-                                    0xFF4A90D9),
-                            foregroundColor:
-                                Colors.white,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF4A90D9),
+                            foregroundColor: Colors.white,
                             elevation: 0,
-                            padding:
-                                const EdgeInsets
-                                    .symmetric(
-                              vertical: 14,
-                            ),
-                            shape:
-                                RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius
-                                      .circular(30),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
                             ),
                           ),
                           child: const Text(
                             "Simpan Password",
                             style: TextStyle(
-                              fontWeight:
-                                  FontWeight.bold,
+                              fontWeight: FontWeight.bold,
                               fontSize: 14,
                             ),
                           ),
@@ -485,8 +411,7 @@ Future<void> _updateProfil() async {
   }) {
     return Container(
       height: 50,
-      padding:
-          const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: const Color(0xFFE3F2FD),
         borderRadius: BorderRadius.circular(14),
@@ -569,9 +494,7 @@ Future<void> _updateProfil() async {
                 const Text(
                   "Kamu yakin ingin logout dari akun ini?",
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.grey,
-                  ),
+                  style: TextStyle(color: Colors.grey),
                 ),
 
                 const SizedBox(height: 24),
@@ -580,30 +503,17 @@ Future<void> _updateProfil() async {
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: () =>
-                            Navigator.pop(ctx),
-                        style:
-                            OutlinedButton.styleFrom(
-                          side: const BorderSide(
-                            color: Color(0xFF6DB5FD),
-                          ),
-                          padding:
-                              const EdgeInsets
-                                  .symmetric(
-                            vertical: 14,
-                          ),
-                          shape:
-                              RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius
-                                    .circular(30),
+                        onPressed: () => Navigator.pop(ctx),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Color(0xFF6DB5FD)),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
                           ),
                         ),
                         child: const Text(
                           "Batal",
-                          style: TextStyle(
-                            color: Color(0xFF012249),
-                          ),
+                          style: TextStyle(color: Color(0xFF012249)),
                         ),
                       ),
                     ),
@@ -614,42 +524,28 @@ Future<void> _updateProfil() async {
                       child: ElevatedButton(
                         onPressed: () async {
                           Navigator.pop(ctx);
-
                           await auth.logout();
-
                           if (!mounted) return;
-
-                          Navigator.pushNamedAndRemoveUntil(
+                          Navigator.pushAndRemoveUntil(
                             context,
-                            '/login',
+                            MaterialPageRoute(
+                              builder: (_) => const LoginPage(),
+                            ),
                             (route) => false,
                           );
                         },
-                        style:
-                            ElevatedButton.styleFrom(
-                          backgroundColor:
-                              Colors.red,
-                          foregroundColor:
-                              Colors.white,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
                           elevation: 0,
-                          padding:
-                              const EdgeInsets
-                                  .symmetric(
-                            vertical: 14,
-                          ),
-                          shape:
-                              RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius
-                                    .circular(30),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
                           ),
                         ),
                         child: const Text(
                           "Keluar",
-                          style: TextStyle(
-                            fontWeight:
-                                FontWeight.bold,
-                          ),
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
@@ -669,38 +565,22 @@ Future<void> _updateProfil() async {
   Widget build(BuildContext context) {
     if (isLoading) {
       return const Center(
-        child: CircularProgressIndicator(
-          color: Color(0xFF6DB5FD),
-        ),
+        child: CircularProgressIndicator(color: Color(0xFF6DB5FD)),
       );
     }
 
-    final username =
-        userData?['username']?.toString() ?? '-';
-
-    final email =
-        userData?['email']?.toString() ?? '-';
-
-    final password =
-        userData?['password']?.toString() ?? '';
-
-    final passwordDots = List.generate(
-      password.length,
-      (_) => '●',
-    ).join(' ');
+    final username = userData?['username']?.toString().trim() ?? '-';
+    final email = userData?['email']?.toString().trim() ?? '-';
 
     return Scaffold(
       backgroundColor: const Color(0xFF6DB5FD),
-
       body: SafeArea(
         bottom: false,
         child: Column(
           children: [
             // HEADER
             const Padding(
-              padding: EdgeInsets.symmetric(
-                vertical: 14,
-              ),
+              padding: EdgeInsets.symmetric(vertical: 14),
               child: Text(
                 "Profil",
                 style: TextStyle(
@@ -723,15 +603,10 @@ Future<void> _updateProfil() async {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: const Color(0xFFD6EAFF),
-                      border: Border.all(
-                        color: Colors.white,
-                        width: 3,
-                      ),
+                      border: Border.all(color: Colors.white, width: 3),
                       image: profileImagePath != null
                           ? DecorationImage(
-                              image: FileImage(
-                                File(profileImagePath!),
-                              ),
+                              image: FileImage(File(profileImagePath!)),
                               fit: BoxFit.cover,
                             )
                           : null,
@@ -744,7 +619,6 @@ Future<void> _updateProfil() async {
                           )
                         : null,
                   ),
-
                   Positioned(
                     right: 0,
                     bottom: 0,
@@ -801,16 +675,9 @@ Future<void> _updateProfil() async {
                   ),
                 ),
                 child: SingleChildScrollView(
-                  padding:
-                      const EdgeInsets.fromLTRB(
-                    20,
-                    28,
-                    20,
-                    40,
-                  ),
+                  padding: const EdgeInsets.fromLTRB(20, 28, 20, 40),
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // USERNAME
                       const Text(
@@ -820,9 +687,7 @@ Future<void> _updateProfil() async {
                           color: Color(0xFF012249),
                         ),
                       ),
-
                       const SizedBox(height: 8),
-
                       Container(
                         height: 50,
                         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -846,14 +711,9 @@ Future<void> _updateProfil() async {
                                 ),
                               ),
                             ),
-
                             GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  isEditingUsername =
-                                      !isEditingUsername;
-                                });
-                              },
+                              onTap: () => setState(
+                                  () => isEditingUsername = !isEditingUsername),
                               child: Icon(
                                 isEditingUsername
                                     ? Icons.check
@@ -864,61 +724,56 @@ Future<void> _updateProfil() async {
                           ],
                         ),
                       ),
+
                       const SizedBox(height: 20),
 
-                    // EMAIL
-                    const Text(
-                      "Email",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF012249),
+                      // EMAIL
+                      const Text(
+                        "Email",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF012249),
+                        ),
                       ),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    Container(
-                      height: 50,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE3F2FD),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: emailController,
-                              enabled: isEditingEmail,
-                              keyboardType: TextInputType.emailAddress,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: Color(0xFF012249),
-                              ),
-                              decoration: const InputDecoration(
-                                border: InputBorder.none,
+                      const SizedBox(height: 8),
+                      Container(
+                        height: 50,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE3F2FD),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: emailController,
+                                enabled: isEditingEmail,
+                                keyboardType: TextInputType.emailAddress,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: Color(0xFF012249),
+                                ),
+                                decoration: const InputDecoration(
+                                  border: InputBorder.none,
+                                ),
                               ),
                             ),
-                          ),
-
-                          GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                isEditingEmail = !isEditingEmail;
-                              });
-                            },
-                            child: Icon(
-                              isEditingEmail
-                                  ? Icons.check
-                                  : Icons.edit_outlined,
-                              color: const Color(0xFF6DB5FD),
+                            GestureDetector(
+                              onTap: () => setState(
+                                  () => isEditingEmail = !isEditingEmail),
+                              child: Icon(
+                                isEditingEmail
+                                    ? Icons.check
+                                    : Icons.edit_outlined,
+                                color: const Color(0xFF6DB5FD),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
 
-                    const SizedBox(height: 20),
+                      const SizedBox(height: 20),
 
                       // PASSWORD
                       const Text(
@@ -929,50 +784,27 @@ Future<void> _updateProfil() async {
                           color: Color(0xFF012249),
                         ),
                       ),
-
                       const SizedBox(height: 8),
-
                       Container(
                         height: 50,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                         decoration: BoxDecoration(
                           color: const Color(0xFFE3F2FD),
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                showPassword
-                                    ? password
-                                    : passwordDots,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  letterSpacing: 2,
-                                  color: Color(0xFF012249),
-                                ),
-                              ),
+                        child: const Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            '●●●●●●●●',
+                            style: TextStyle(
+                              fontSize: 14,
+                              letterSpacing: 4,
+                              color: Color(0xFF012249),
                             ),
-
-                            GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  showPassword = !showPassword;
-                                });
-                              },
-                              child: Icon(
-                                showPassword
-                                    ? Icons.visibility_outlined
-                                    : Icons.visibility_off_outlined,
-                                size: 20,
-                                color: const Color(0xFF6DB5FD),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
+
                       const SizedBox(height: 10),
 
                       GestureDetector(
@@ -989,43 +821,28 @@ Future<void> _updateProfil() async {
                         ),
                       ),
 
-                      const SizedBox(height: 36),
+                      const SizedBox(height: 24),
 
                       // UPDATE BUTTON
                       Center(
                         child: SizedBox(
-                          width: 210,
+                          width: 150,
                           child: ElevatedButton(
-                            onPressed:
-                                _updateProfil,
-                            style:
-                                ElevatedButton
-                                    .styleFrom(
-                              backgroundColor:
-                                  const Color(
-                                      0xFF4A90D9),
-                              foregroundColor:
-                                  Colors.white,
+                            onPressed: _updateProfil,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF4A90D9),
+                              foregroundColor: Colors.white,
                               elevation: 0,
-                              padding:
-                                  const EdgeInsets
-                                      .symmetric(
-                                vertical: 14,
-                              ),
-                              shape:
-                                  RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius
-                                        .circular(
-                                            30),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
                               ),
                             ),
                             child: const Text(
                               "Update Profil",
                               style: TextStyle(
-                                fontWeight:
-                                    FontWeight.bold,
-                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
                               ),
                             ),
                           ),
@@ -1037,9 +854,8 @@ Future<void> _updateProfil() async {
                       // LOGOUT BUTTON
                       Center(
                         child: SizedBox(
-                          width: 210,
-                          child:
-                              OutlinedButton.icon(
+                          width: 150,
+                          child: OutlinedButton.icon(
                             onPressed: _logout,
                             icon: const Icon(
                               Icons.logout,
@@ -1050,28 +866,15 @@ Future<void> _updateProfil() async {
                               "Logout",
                               style: TextStyle(
                                 color: Colors.red,
-                                fontWeight:
-                                    FontWeight.bold,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
                               ),
                             ),
-                            style:
-                                OutlinedButton
-                                    .styleFrom(
-                              side:
-                                  const BorderSide(
-                                color: Colors.red,
-                              ),
-                              padding:
-                                  const EdgeInsets
-                                      .symmetric(
-                                vertical: 14,
-                              ),
-                              shape:
-                                  RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius
-                                        .circular(
-                                            30),
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: Colors.red),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
                               ),
                             ),
                           ),

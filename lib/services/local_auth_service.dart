@@ -6,13 +6,13 @@ import '../database/database_helper.dart';
 class LocalAuthService {
   final db = DatabaseHelper.instance;
 
-  // HASH FUNCTION 
+  // HASH FUNCTION
   String hashPassword(String password) {
     final bytes = utf8.encode(password);
     return sha256.convert(bytes).toString();
   }
 
-  // VALIDASI EMAIL 
+  // VALIDASI EMAIL
   bool isValidEmail(String email) {
     final regex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
     return regex.hasMatch(email);
@@ -69,7 +69,13 @@ class LocalAuthService {
   // LOGOUT
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
+    // Simpan profile image sebelum clear supaya tidak hilang
+    final savedImage = prefs.getString('profile_image');
     await prefs.clear();
+    // Kembalikan profile image kalau ada
+    if (savedImage != null) {
+      await prefs.setString('profile_image', savedImage);
+    }
   }
 
   // CEK LOGIN
@@ -78,9 +84,35 @@ class LocalAuthService {
     return prefs.getBool('is_logged_in') ?? false;
   }
 
-  // GET USER ID 
+  // GET USER ID
   Future<int?> getUserId() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getInt('user_id');
+  }
+
+  // SAVE PROFILE IMAGE PATH
+  Future<void> saveProfileImage(String path) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt('user_id');
+    if (userId != null) {
+      await prefs.setString('profile_image_$userId', path);
+    }
+  }
+
+  // GET PROFILE IMAGE PATH
+  Future<String?> getProfileImage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt('user_id');
+    if (userId == null) return null;
+    return prefs.getString('profile_image_$userId');
+  }
+
+  // DELETE PROFILE IMAGE
+  Future<void> deleteProfileImage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt('user_id');
+    if (userId != null) {
+      await prefs.remove('profile_image_$userId');
+    }
   }
 }
