@@ -87,4 +87,17 @@ class AuthService {
     final uid = currentUserId;
     if (uid != null) await prefs.remove('profile_image_$uid');
   }
+
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        throw Exception('Email tidak terdaftar');
+      } else if (e.code == 'invalid-email') {
+        throw Exception('Format email tidak valid');
+      }
+      throw Exception('Gagal mengirim email reset password. Coba lagi nanti.');
+    }
+  }
 }

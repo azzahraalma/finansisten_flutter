@@ -279,6 +279,11 @@ class _RegisterPageState extends State<RegisterPage> {
           onChanged: onChanged,
           decoration: InputDecoration(
             hintText: hint,
+            hintStyle: const TextStyle(
+              color: Color(0xFFB0B0B0), // 🔥 HINT TEXT ABU-ABU TERANG
+              fontWeight: FontWeight.normal,
+              fontSize: 14,
+            ),
             filled: true,
             fillColor: const Color(0xFFE3F2FD),
             border: OutlineInputBorder(
@@ -290,6 +295,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     icon: Icon(
                       hidePass ? Icons.visibility_off : Icons.visibility,
                       size: 20,
+                      color: const Color(0xFF999999), // 🔥 ICON ABU-ABU
                     ),
                     onPressed: onToggle,
                   )

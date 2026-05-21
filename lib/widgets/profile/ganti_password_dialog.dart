@@ -5,10 +5,12 @@ import 'package:finansisten/services/auth_service.dart';
 class GantiPasswordDialog extends StatefulWidget {
   const GantiPasswordDialog({
     super.key,
+    required this.userEmail,  // 🔥 TAMBAHKAN INI
     required this.onSave,
     required this.onError,
   });
 
+  final String userEmail;  // 🔥 TAMBAHKAN INI
   final Future<void> Function(String newPassword) onSave;
   final void Function(String message) onError;
 
@@ -27,6 +29,7 @@ class _GantiPasswordDialogState extends State<GantiPasswordDialog> {
   bool _hideNew = true;
   bool _hideConfirm = true;
   bool _isLoading = false;
+  bool _isSendingReset = false;
 
   @override
   void dispose() {
@@ -72,6 +75,24 @@ class _GantiPasswordDialogState extends State<GantiPasswordDialog> {
     if (mounted) Navigator.pop(context);
   }
 
+  Future<void> _sendResetPassword() async {
+    if (widget.userEmail.isEmpty) {
+      widget.onError("Email tidak ditemukan");
+      return;
+    }
+
+    setState(() => _isSendingReset = true);
+
+    try {
+      await _auth.sendPasswordResetEmail(widget.userEmail);
+      widget.onError("✅ Link reset password telah dikirim ke ${widget.userEmail}\nCek inbox atau folder spam");
+    } catch (e) {
+      widget.onError(e.toString());
+    } finally {
+      if (mounted) setState(() => _isSendingReset = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -106,7 +127,38 @@ class _GantiPasswordDialogState extends State<GantiPasswordDialog> {
             _passwordField("Konfirmasi Password Baru", _confirmCtrl,
                 _hideConfirm, () => setState(() => _hideConfirm = !_hideConfirm)),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 8),
+
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: _isSendingReset ? null : _sendResetPassword,
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: _isSendingReset
+                    ? const SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: kAccent,
+                        ),
+                      )
+                    : const Text(
+                        'Lupa Password?',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: kAccent,
+                        ),
+                      ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
 
             Row(
               children: [

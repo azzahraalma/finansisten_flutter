@@ -134,10 +134,13 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void _showGantiPasswordDialog() {
+    final userEmail = userData?['email']?.toString().trim() ?? '';
+    
     showDialog(
       context: context,
       barrierColor: Colors.black.withOpacity(0.45),
       builder: (_) => GantiPasswordDialog(
+        userEmail: userEmail,
         onSave: (newPassword) async {
           final uid = _auth.getUserId();
           if (uid == null) return;
@@ -225,7 +228,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final username = userData?['username']?.toString().trim() ?? '-';
     final email = userData?['email']?.toString().trim() ?? '-';
 
-    final passwordBullets = '●' * passwordLength;
+    final passwordBullets = '●' * (passwordLength > 0 ? passwordLength : 8);
 
     return Scaffold(
       backgroundColor: kAccent,
@@ -346,11 +349,11 @@ class _PasswordDisplayField extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  bullets.isEmpty ? '––––––––' : bullets,
-                  style: TextStyle(
-                    fontSize: bullets.isEmpty ? 16 : 10,
+                  bullets,
+                  style: const TextStyle(
+                    fontSize: 12,
                     color: kPrimary,
-                    letterSpacing: bullets.isEmpty ? 0 : 2,
+                    letterSpacing: 2,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),

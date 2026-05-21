@@ -18,6 +18,7 @@ class _LoginPageState extends State<LoginPage>
   String password = '';
   bool hidePassword = true;
   bool isLoading = false;
+  bool isSendingReset = false;
 
   OverlayEntry? _snackEntry;
 
@@ -36,10 +37,43 @@ class _LoginPageState extends State<LoginPage>
     _snackEntry = entry;
     overlay.insert(entry);
 
-    Future.delayed(const Duration(seconds: 2), () {
+    Future.delayed(const Duration(seconds: 3), () {
       entry.remove();
       _snackEntry = null;
     });
+  }
+
+  Future<void> _sendResetPassword() async {
+    final emailTrim = email.trim().toLowerCase();
+
+    if (emailTrim.isEmpty) {
+      showTopSnack("Masukkan email terlebih dahulu", icon: Icons.warning_amber_rounded);
+      return;
+    }
+
+    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
+    if (!emailRegex.hasMatch(emailTrim)) {
+      showTopSnack("Format email tidak valid", icon: Icons.error);
+      return;
+    }
+
+    setState(() => isSendingReset = true);
+
+    try {
+      await auth.sendPasswordResetEmail(emailTrim);
+      if (mounted) {
+        showTopSnack(
+          "Cek $emailTrim untuk link reset password di inbox atau folder spam",
+          icon: Icons.check_circle,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        showTopSnack(e.toString(), icon: Icons.error);
+      }
+    } finally {
+      if (mounted) setState(() => isSendingReset = false);
+    }
   }
 
   @override
@@ -59,7 +93,7 @@ class _LoginPageState extends State<LoginPage>
             ),
           ),
 
-          const SizedBox(height: 60), 
+          const SizedBox(height: 60),
 
           Expanded(
             child: Container(
@@ -74,7 +108,7 @@ class _LoginPageState extends State<LoginPage>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 40), 
+                    const SizedBox(height: 40),
 
                     labeledInput(
                       label: "Email",
@@ -95,6 +129,37 @@ class _LoginPageState extends State<LoginPage>
                       onChanged: (v) => password = v,
                       onToggle: () =>
                           setState(() => hidePassword = !hidePassword),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: isSendingReset ? null : _sendResetPassword,
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: isSendingReset
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Color(0xFF6DB5FD),
+                                ),
+                              )
+                            : const Text(
+                                'Lupa Password?',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF6DB5FD),
+                                ),
+                              ),
+                      ),
                     ),
 
                     const SizedBox(height: 25),
@@ -134,12 +199,14 @@ class _LoginPageState extends State<LoginPage>
 
                         await Future.delayed(const Duration(milliseconds: 500));
 
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const HomePage(),
-                          ),
-                        );
+                        if (mounted) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const HomePage(),
+                            ),
+                          );
+                        }
                       } else {
                         showTopSnack(
                           "Email atau password salah",
@@ -156,7 +223,7 @@ class _LoginPageState extends State<LoginPage>
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => RegisterPage(),
+                              builder: (_) => const RegisterPage(),
                             ),
                           );
                         },
@@ -221,6 +288,11 @@ class _LoginPageState extends State<LoginPage>
           onChanged: onChanged,
           decoration: InputDecoration(
             hintText: hint,
+            hintStyle: const TextStyle(
+              color: Color(0xFFB0B0B0), // 🔥 HINT TEXT ABU-ABU TERANG
+              fontWeight: FontWeight.normal,
+              fontSize: 14,
+            ),
             filled: true,
             fillColor: const Color(0xFFE3F2FD),
             border: OutlineInputBorder(
@@ -231,6 +303,7 @@ class _LoginPageState extends State<LoginPage>
                 ? IconButton(
                     icon: Icon(
                       hidePass ? Icons.visibility_off : Icons.visibility,
+                      color: const Color(0xFF999999), // 🔥 ICON ABU-ABU
                     ),
                     onPressed: onToggle,
                   )

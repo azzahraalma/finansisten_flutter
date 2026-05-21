@@ -8,7 +8,7 @@ import 'screens/splash_screen.dart';
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('id_ID', null);
-  await Firebase.initializeApp(); // ← init Firebase
+  await Firebase.initializeApp(); 
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   runApp(const MyApp());
 }
