@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/local_auth_service.dart';
+import '../services/auth_service.dart';
 import 'register_page.dart';
 import 'homepage.dart';
 
@@ -12,7 +12,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage>
     with SingleTickerProviderStateMixin {
-  final auth = LocalAuthService();
+  final auth = AuthService.instance;
 
   String email = '';
   String password = '';
@@ -21,9 +21,6 @@ class _LoginPageState extends State<LoginPage>
 
   OverlayEntry? _snackEntry;
 
-  /// =========================
-  /// TOP SNACKBAR (SLIDE)
-  /// =========================
   void showTopSnack(String message, {IconData icon = Icons.info}) {
     _snackEntry?.remove();
 
@@ -39,7 +36,7 @@ class _LoginPageState extends State<LoginPage>
     _snackEntry = entry;
     overlay.insert(entry);
 
-    Future.delayed(Duration(seconds: 2), () {
+    Future.delayed(const Duration(seconds: 2), () {
       entry.remove();
       _snackEntry = null;
     });
@@ -48,28 +45,28 @@ class _LoginPageState extends State<LoginPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF6DB5FD),
+      backgroundColor: const Color(0xFF6DB5FD),
       body: Column(
         children: [
-          SizedBox(height: 60),
+          const SizedBox(height: 100), // ← lebih besar, area biru makin lega
 
           /// TITLE
-          Text(
+          const Text(
             "Masuk",
             style: TextStyle(
               fontSize: 28,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w900,
               color: Color.fromARGB(255, 1, 34, 73),
             ),
           ),
 
-          SizedBox(height: 40),
+          const SizedBox(height: 60), // ← lebih besar, "Masuk" makin turun
 
           /// CARD
           Expanded(
             child: Container(
-              padding: EdgeInsets.all(25),
-              decoration: BoxDecoration(
+              padding: const EdgeInsets.all(25),
+              decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.vertical(
                   top: Radius.circular(40),
@@ -79,7 +76,7 @@ class _LoginPageState extends State<LoginPage>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(height: 14),
+                    const SizedBox(height: 40), // ← lebih besar, Email turun
 
                     /// EMAIL
                     labeledInput(
@@ -91,7 +88,7 @@ class _LoginPageState extends State<LoginPage>
                       onToggle: null,
                     ),
 
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
                     /// PASSWORD
                     labeledInput(
@@ -104,7 +101,7 @@ class _LoginPageState extends State<LoginPage>
                           setState(() => hidePassword = !hidePassword),
                     ),
 
-                    SizedBox(height: 25),
+                    const SizedBox(height: 25),
 
                     /// LOGIN BUTTON
                     primaryButton("Masuk", () async {
@@ -140,7 +137,7 @@ class _LoginPageState extends State<LoginPage>
                           icon: Icons.check_circle,
                         );
 
-                        await Future.delayed(Duration(milliseconds: 500));
+                        await Future.delayed(const Duration(milliseconds: 500));
 
                         Navigator.pushReplacement(
                           context,
@@ -156,7 +153,7 @@ class _LoginPageState extends State<LoginPage>
                       }
                     }),
 
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
                     /// FOOTER
                     Center(
@@ -170,7 +167,7 @@ class _LoginPageState extends State<LoginPage>
                           );
                         },
                         child: RichText(
-                          text: TextSpan(
+                          text: const TextSpan(
                             text: "Belum punya akun? ",
                             style: TextStyle(
                               color: Colors.grey,
@@ -199,9 +196,6 @@ class _LoginPageState extends State<LoginPage>
     );
   }
 
-  /// =========================
-  /// INPUT FIELD
-  /// =========================
   Widget labeledInput({
     required String label,
     required String hint,
@@ -214,17 +208,17 @@ class _LoginPageState extends State<LoginPage>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
             label,
-            style: TextStyle(
+            style: const TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 16,
               color: Color.fromARGB(255, 1, 34, 73),
             ),
           ),
         ),
-        SizedBox(height: 6),
+        const SizedBox(height: 6),
         TextField(
           keyboardType: isPassword
               ? TextInputType.text
@@ -234,7 +228,7 @@ class _LoginPageState extends State<LoginPage>
           decoration: InputDecoration(
             hintText: hint,
             filled: true,
-            fillColor: Color(0xFFE3F2FD),
+            fillColor: const Color(0xFFE3F2FD),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(30),
               borderSide: BorderSide.none,
@@ -242,9 +236,7 @@ class _LoginPageState extends State<LoginPage>
             suffixIcon: isPassword
                 ? IconButton(
                     icon: Icon(
-                      hidePass
-                          ? Icons.visibility_off
-                          : Icons.visibility,
+                      hidePass ? Icons.visibility_off : Icons.visibility,
                     ),
                     onPressed: onToggle,
                   )
@@ -255,30 +247,27 @@ class _LoginPageState extends State<LoginPage>
     );
   }
 
-  /// =========================
-  /// BUTTON
-  /// =========================
   Widget primaryButton(String text, VoidCallback onPressed) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 80),
+      padding: const EdgeInsets.symmetric(horizontal: 80),
       child: SizedBox(
         width: double.infinity,
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Color(0xFF6DB5FD),
-            shape: StadiumBorder(),
-            padding: EdgeInsets.symmetric(vertical: 12),
+            backgroundColor: const Color(0xFF6DB5FD),
+            shape: const StadiumBorder(),
+            padding: const EdgeInsets.symmetric(vertical: 12),
           ),
           onPressed: isLoading ? null : onPressed,
           child: isLoading
-              ? SizedBox(
+              ? const SizedBox(
                   height: 18,
                   width: 18,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : Text(
                   text,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Color.fromARGB(255, 1, 34, 73),
                     fontWeight: FontWeight.bold,
                   ),
@@ -289,9 +278,6 @@ class _LoginPageState extends State<LoginPage>
   }
 }
 
-/// =========================
-/// TOP SNACK WIDGET
-/// =========================
 class _TopSnack extends StatefulWidget {
   final String message;
   final IconData icon;
@@ -317,20 +303,17 @@ class _TopSnackState extends State<_TopSnack>
 
     controller = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 350),
+      duration: const Duration(milliseconds: 350),
     );
 
     slide = Tween<Offset>(
-      begin: Offset(0, -1),
-      end: Offset(0, 0),
+      begin: const Offset(0, -1),
+      end: Offset.zero,
     ).animate(
       CurvedAnimation(parent: controller, curve: Curves.easeOutBack),
     );
 
-    fade = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(controller);
+    fade = Tween<double>(begin: 0, end: 1).animate(controller);
 
     controller.forward();
   }
@@ -354,14 +337,11 @@ class _TopSnackState extends State<_TopSnack>
           child: Material(
             color: Colors.transparent,
             child: Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 14,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(14),
-                boxShadow: [
+                boxShadow: const [
                   BoxShadow(
                     color: Colors.black12,
                     blurRadius: 15,
@@ -370,15 +350,12 @@ class _TopSnackState extends State<_TopSnack>
               ),
               child: Row(
                 children: [
-                  Icon(
-                    widget.icon,
-                    color: Color(0xFF6DB5FD),
-                  ),
-                  SizedBox(width: 10),
+                  Icon(widget.icon, color: const Color(0xFF6DB5FD)),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       widget.message,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Color.fromARGB(255, 1, 34, 73),
                         fontWeight: FontWeight.w500,
                       ),

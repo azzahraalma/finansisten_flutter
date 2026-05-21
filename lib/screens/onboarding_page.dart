@@ -158,7 +158,7 @@ Expanded(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
-              ".idea/assets/img/logo.png",  
+              ".idea/assets/img/logo_clear.png",  
               width: 140,
               height: 140,
             ),

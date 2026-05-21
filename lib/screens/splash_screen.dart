@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 import '../services/local_auth_service.dart';
-import 'login_page.dart';
+import 'onboarding_page.dart';
 import 'homepage.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -17,25 +17,29 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    FlutterNativeSplash.remove(); 
-    _navigate();
+    _navigate(); // ← FlutterNativeSplash.remove() sudah dipindah ke dalam _navigate()
   }
 
   Future<void> _navigate() async {
     await Future.delayed(const Duration(seconds: 2));
+    FlutterNativeSplash.remove(); // ← di sini
 
     final auth = LocalAuthService();
     final isLoggedIn = await auth.isLoggedIn();
 
     if (!mounted) return;
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) =>
-            isLoggedIn ? const HomePage() : const LoginPage(),
-      ),
-    );
+    if (isLoggedIn) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomePage()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const OnboardingPage()),
+      );
+    }
   }
 
   @override
@@ -47,7 +51,7 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
-              '.idea/assets/img/logo.png', 
+              '.idea/assets/img/logo_clear.png',
               width: 150,
             ),
             const SizedBox(height: 20),

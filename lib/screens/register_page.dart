@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import '../services/local_auth_service.dart';
+import 'package:finansisten/database/firestore_service.dart';
+import '../services/auth_service.dart';
+import '../widgets/terms_overlay.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -9,46 +11,57 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  final auth = LocalAuthService();
+  final auth = AuthService.instance;
+  final db = FirestoreService.instance;
 
+  String username = '';
   String email = '';
   String password = '';
   String confirm = '';
   bool hidePassword = true;
   bool hideConfirm = true;
-  bool isLoading = false; 
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF6DB5FD),
+      backgroundColor: const Color(0xFF6DB5FD),
       body: Column(
         children: [
-          SizedBox(height: 60),
-          Text(
+          const SizedBox(height: 60),
+          const Text(
             "Daftar",
             style: TextStyle(
               fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: const Color.fromARGB(255, 1, 34, 73),
+              fontWeight: FontWeight.w900,
+              color: Color.fromARGB(255, 1, 34, 73),
             ),
           ),
-          SizedBox(height: 40),
+          const SizedBox(height: 60),
           Expanded(
             child: Container(
-              padding: EdgeInsets.all(25),
-              decoration: BoxDecoration(
+              padding: const EdgeInsets.all(25),
+              decoration: const BoxDecoration(
                 color: Colors.white,
-                borderRadius:
-                    BorderRadius.vertical(top: Radius.circular(40)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
               ),
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(height: 12),
+                    const SizedBox(height: 16),
 
-                    /// EMAIL
+                    labeledInput(
+                      label: "Username",
+                      hint: "nama kamu",
+                      isPassword: false,
+                      hidePass: false,
+                      onChanged: (v) => username = v,
+                      onToggle: null,
+                    ),
+
+                    const SizedBox(height: 20),
+
                     labeledInput(
                       label: "Email",
                       hint: "example@example.com",
@@ -58,134 +71,155 @@ class _RegisterPageState extends State<RegisterPage> {
                       onToggle: null,
                     ),
 
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-                    /// PASSWORD
                     labeledInput(
                       label: "Password",
                       hint: "••••••••",
                       isPassword: true,
                       hidePass: hidePassword,
                       onChanged: (v) => password = v,
-                      onToggle: () => setState(
-                          () => hidePassword = !hidePassword),
+                      onToggle: () =>
+                          setState(() => hidePassword = !hidePassword),
                     ),
 
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-                    /// CONFIRM PASSWORD
                     labeledInput(
                       label: "Konfirmasi Password",
                       hint: "••••••••",
                       isPassword: true,
                       hidePass: hideConfirm,
                       onChanged: (v) => confirm = v,
-                      onToggle: () => setState(
-                          () => hideConfirm = !hideConfirm),
+                      onToggle: () =>
+                          setState(() => hideConfirm = !hideConfirm),
                     ),
 
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
                     Center(
-                      child: Text(
-                        "Dengan melanjutkan, kamu setuju dengan\nTerms of Use dan Privacy Policy.",
+                      child: RichText(
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        text: TextSpan(
+                          style: const TextStyle(
                             fontSize: 12,
-                            color: const Color.fromARGB(255, 0, 0, 0)),
+                            color: Colors.black54,
+                            height: 1.6,
+                          ),
+                          children: [
+                            const TextSpan(
+                                text:
+                                    'Dengan melanjutkan, kamu setuju dengan\n'),
+                            WidgetSpan(
+                              child: GestureDetector(
+                                onTap: () => showTermsOverlay(context),
+                                child: const Text(
+                                  'Syarat & Ketentuan',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF012249),
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const TextSpan(text: ' dan '),
+                            WidgetSpan(
+                              child: GestureDetector(
+                                onTap: () => showTermsOverlay(context),
+                                child: const Text(
+                                  'Kebijakan Privasi',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF012249),
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const TextSpan(text: '.'),
+                          ],
+                        ),
                       ),
                     ),
 
-                    SizedBox(height: 20),
+                    const SizedBox(height: 40),
 
-                    /// BUTTON DAFTAR
                     primaryButton("Daftar", () async {
+                      username = username.trim();
                       email = email.trim().toLowerCase();
                       password = password.trim();
                       confirm = confirm.trim();
 
-                      if (email.isEmpty ||
+                      if (username.isEmpty ||
+                          email.isEmpty ||
                           password.isEmpty ||
                           confirm.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content:
-                                  Text("Semua field wajib diisi")),
-                        );
+                        _showSnack("Semua field wajib diisi");
                         return;
                       }
 
-                      final emailRegex =
-                          RegExp(r'^[^@]+@[^@]+\.[^@]+$');
+                      final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
                       if (!emailRegex.hasMatch(email)) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content:
-                                  Text("Format email tidak valid")),
-                        );
+                        _showSnack("Format email tidak valid");
                         return;
                       }
 
                       if (password.length < 6) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text(
-                                  "Password minimal 6 karakter")),
-                        );
+                        _showSnack("Password minimal 6 karakter");
                         return;
                       }
 
                       if (password != confirm) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content:
-                                  Text("Password tidak sama")),
-                        );
+                        _showSnack("Password tidak sama");
                         return;
                       }
 
                       setState(() => isLoading = true);
 
-                      bool success =
-                          await auth.register(email, password);
-
-                      setState(() => isLoading = false);
+                      final success = await auth.register(email, password);
 
                       if (success) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text(
-                                  "Registrasi berhasil! Silakan login")),
-                        );
+                        final uid = auth.getUserId();
+                        if (uid != null) {
+                          // Simpan profile + password_length (bukan password plaintext)
+                          await db.saveUserProfile(uid, {
+                            'username': username,
+                            'email': email,
+                            'password_length': password.length,
+                          });
+                        }
+                        setState(() => isLoading = false);
+                        if (!mounted) return;
+                        _showSnack("Registrasi berhasil! Silakan login");
+                        await Future.delayed(const Duration(milliseconds: 800));
+                        if (!mounted) return;
                         Navigator.pop(context);
                       } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content:
-                                  Text("Email sudah terdaftar")),
-                        );
+                        setState(() => isLoading = false);
+                        _showSnack("Email sudah terdaftar");
                       }
                     }),
 
-                    SizedBox(height: 15),
+                    const SizedBox(height: 15),
 
-                    /// FOOTER
                     Center(
                       child: RichText(
                         text: TextSpan(
                           text: "Sudah Punya Akun? ",
-                          style: TextStyle(
-                              color: Colors.grey, fontSize: 13),
+                          style: const TextStyle(
+                              color: Colors.grey, fontSize: 14),
                           children: [
                             WidgetSpan(
                               child: GestureDetector(
-                                onTap: () =>
-                                    Navigator.pop(context),
-                                child: Text(
+                                onTap: () => Navigator.pop(context),
+                                child: const Text(
                                   "Masuk",
                                   style: TextStyle(
                                     color: Color(0xFF6FA8DC),
-                                    fontSize: 13,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -205,7 +239,12 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  /// INPUT FIELD
+  void _showSnack(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(msg)));
+  }
+
   Widget labeledInput({
     required String label,
     required String hint,
@@ -218,27 +257,29 @@ class _RegisterPageState extends State<RegisterPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
             label,
-            style: TextStyle(
+            style: const TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 16,
-              color: const Color.fromARGB(255, 1, 34, 73),
+              color: Color.fromARGB(255, 1, 34, 73),
             ),
           ),
         ),
-        SizedBox(height: 6),
+        const SizedBox(height: 6),
         TextField(
           keyboardType: isPassword
               ? TextInputType.text
-              : TextInputType.emailAddress,
+              : label == "Email"
+                  ? TextInputType.emailAddress
+                  : TextInputType.text,
           obscureText: isPassword ? hidePass : false,
           onChanged: onChanged,
           decoration: InputDecoration(
             hintText: hint,
             filled: true,
-            fillColor: Color(0xFFE3F2FD),
+            fillColor: const Color(0xFFE3F2FD),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(30),
               borderSide: BorderSide.none,
@@ -246,9 +287,7 @@ class _RegisterPageState extends State<RegisterPage> {
             suffixIcon: isPassword
                 ? IconButton(
                     icon: Icon(
-                      hidePass
-                          ? Icons.visibility_off
-                          : Icons.visibility,
+                      hidePass ? Icons.visibility_off : Icons.visibility,
                       size: 20,
                     ),
                     onPressed: onToggle,
@@ -260,31 +299,28 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  /// BUTTON
   Widget primaryButton(String text, VoidCallback onPressed) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 80),
+      padding: const EdgeInsets.symmetric(horizontal: 80),
       child: SizedBox(
         width: double.infinity,
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Color(0xFF6DB5FD),
-            shape: StadiumBorder(),
-            padding: EdgeInsets.symmetric(vertical: 12),
+            backgroundColor: const Color(0xFF6DB5FD),
+            shape: const StadiumBorder(),
+            padding: const EdgeInsets.symmetric(vertical: 12),
           ),
           onPressed: isLoading ? null : onPressed,
           child: isLoading
-              ? SizedBox(
+              ? const SizedBox(
                   height: 18,
                   width: 18,
-                  child:
-                      CircularProgressIndicator(strokeWidth: 2),
+                  child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : Text(
                   text,
-                  style: TextStyle(
-                    color:
-                        const Color.fromARGB(255, 1, 34, 73),
+                  style: const TextStyle(
+                    color: Color.fromARGB(255, 1, 34, 73),
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                   ),

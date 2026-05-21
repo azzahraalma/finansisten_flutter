@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "239354429988",
+    "project_id": "finansisten",
+    "storage_bucket": "finansisten.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:239354429988:android:9b70e9da5654c1a6e34eb1",
+        "android_client_info": {
+          "package_name": "com.example.finansisten"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDRwnb5MLsWgbgk6HE-Q-c3zbtB7bT8twM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

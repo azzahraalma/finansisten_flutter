@@ -39,9 +39,6 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
     });
   }
 
-  // =========================
-  // GROUP NOTIFICATION
-  // =========================
 
   Map<String, List<Map<String, dynamic>>> _grouped() {
     final sekarang = DateTime.now();
@@ -84,9 +81,6 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
     return groups;
   }
 
-  // =========================
-  // FORMAT TIME
-  // =========================
 
   String _formatTimestamp(String isoString) {
     final date = DateTime.parse(isoString);
@@ -96,10 +90,6 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
       'id_ID',
     ).format(date);
   }
-
-  // =========================
-  // ICON
-  // =========================
 
   IconData _iconFor(String? tipe) {
     switch (tipe) {
@@ -136,9 +126,6 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
     }
   }
 
-  // =========================
-  // UI
-  // =========================
 
   @override
   Widget build(BuildContext context) {
@@ -152,8 +139,7 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
 
         child: Column(
           children: [
-            // ================= HEADER =================
-
+            // HEADER 
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 16,
@@ -207,7 +193,7 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
               ),
             ),
 
-            // ================= BODY =================
+            //  BODY 
 
             Expanded(
               child: Container(
@@ -282,9 +268,6 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
     );
   }
 
-  // =========================
-  // NOTIF TILE
-  // =========================
 
   Widget _notifTile(Map<String, dynamic> notif) {
     final tipe = notif['tipe'];
@@ -403,9 +386,6 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
     );
   }
 
-  // =========================
-  // EMPTY
-  // =========================
 
   Widget _buildEmpty() {
     return Center(
