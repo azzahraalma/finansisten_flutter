@@ -6,7 +6,6 @@ class FirestoreService {
 
   final _db = FirebaseFirestore.instance;
 
-  // ── Helpers path ─────────────────────────────────────
   CollectionReference _users() => _db.collection('users');
 
   CollectionReference _kategori(String uid) =>
@@ -24,10 +23,6 @@ class FirestoreService {
   CollectionReference _notifications(String uid) =>
       _users().doc(uid).collection('notifications');
 
-  // ═══════════════════════════════════════════════════
-  // USER PROFILE
-  // ═══════════════════════════════════════════════════
-
   Future<void> saveUserProfile(String uid, Map<String, dynamic> data) async {
     await _users().doc(uid).set(data, SetOptions(merge: true));
   }
@@ -41,15 +36,10 @@ class FirestoreService {
     await _users().doc(uid).update(data);
   }
 
-  // ═══════════════════════════════════════════════════
-  // KATEGORI
-  // ═══════════════════════════════════════════════════
-
   Future<String> insertKategori(String uid, Map<String, dynamic> data) async {
     final nama = data['nama'].toString().trim().toLowerCase();
     final jenis = data['jenis'].toString().trim().toLowerCase();
 
-    // Cek duplikat
     final existing = await _kategori(uid)
         .where('nama_lower', isEqualTo: nama)
         .where('jenis', isEqualTo: jenis)
@@ -82,10 +72,6 @@ class FirestoreService {
         .toList();
   }
 
-  // ═══════════════════════════════════════════════════
-  // TRANSAKSI
-  // ═══════════════════════════════════════════════════
-
   Future<String> insertTransaksi(String uid, Map<String, dynamic> data) async {
     final ref = await _transaksi(uid).add({
       ...data,
@@ -103,7 +89,7 @@ class FirestoreService {
 
     for (final doc in snap.docs) {
       final data = doc.data() as Map<String, dynamic>;
-      // Ambil nama kategori
+
       String kategoriNama = '-';
       if (data['kategori_id'] != null) {
         final katDoc =
@@ -128,7 +114,7 @@ class FirestoreService {
   }
 
   Future<void> deleteTransaksi(String uid, String transaksiId) async {
-    // Hapus notif yang linked ke transaksi ini
+
     final notifSnap = await _notifications(uid)
         .where('transaksi_id', isEqualTo: transaksiId)
         .get();
@@ -139,12 +125,7 @@ class FirestoreService {
     await resetBudgetNotifState(uid);
   }
 
-  // ═══════════════════════════════════════════════════
-  // BUDGET
-  // ═══════════════════════════════════════════════════
-
   Future<String> insertBudget(String uid, Map<String, dynamic> data) async {
-    // Cek duplikat kategori
     final existing = await _budget(uid)
         .where('kategori_id', isEqualTo: data['kategori_id'])
         .limit(1)
@@ -171,7 +152,6 @@ class FirestoreService {
       final b = bDoc.data() as Map<String, dynamic>;
       final kategoriId = b['kategori_id'] as String?;
 
-      // Ambil nama kategori
       String kategoriNama = '-';
       if (kategoriId != null) {
         final katDoc = await _kategori(uid).doc(kategoriId).get();
@@ -181,7 +161,6 @@ class FirestoreService {
         }
       }
 
-      // Hitung total spent untuk kategori ini
       double totalSpent = 0;
       for (final t in transaksiSnap.docs) {
         final tData = t.data() as Map<String, dynamic>;
@@ -206,7 +185,6 @@ class FirestoreService {
   }
 
   Future<void> deleteBudget(String uid, String budgetId) async {
-    // Hapus notif state
     await _users()
         .doc(uid)
         .collection('budget_notif_state')
@@ -214,10 +192,6 @@ class FirestoreService {
         .delete();
     await _budget(uid).doc(budgetId).delete();
   }
-
-  // ═══════════════════════════════════════════════════
-  // TABUNGAN
-  // ═══════════════════════════════════════════════════
 
   Future<String> insertTabungan(String uid, Map<String, dynamic> data) async {
     final ref = await _tabungan(uid).add({
@@ -242,10 +216,6 @@ class FirestoreService {
   Future<void> deleteTabungan(String uid, String tabunganId) async {
     await _tabungan(uid).doc(tabunganId).delete();
   }
-
-  // ═══════════════════════════════════════════════════
-  // NOTIFICATIONS
-  // ═══════════════════════════════════════════════════
 
   Future<String> insertNotification(
       String uid, Map<String, dynamic> data) async {
@@ -283,10 +253,6 @@ class FirestoreService {
         .get();
     return snap.docs.length;
   }
-
-  // ═══════════════════════════════════════════════════
-  // BUDGET WARNING
-  // ═══════════════════════════════════════════════════
 
   int _thresholdLevel(double percent) {
     if (percent >= 100) return 3;
@@ -381,10 +347,6 @@ class FirestoreService {
     }
     return warnings;
   }
-
-  // ═══════════════════════════════════════════════════
-  // LAPORAN
-  // ═══════════════════════════════════════════════════
 
   Future<List<Map<String, dynamic>>> getLaporanByPeriode(
     String uid,

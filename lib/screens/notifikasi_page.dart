@@ -139,7 +139,6 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
 
         child: Column(
           children: [
-            // HEADER 
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 16,
@@ -192,8 +191,6 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
                 ],
               ),
             ),
-
-            //  BODY 
 
             Expanded(
               child: Container(
@@ -295,29 +292,20 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
                 CrossAxisAlignment.start,
 
             children: [
-              // ICON
-
               Container(
                 width: 44,
                 height: 44,
-
                 decoration: BoxDecoration(
                   color:
                       _iconColor(tipe).withOpacity(0.15),
-
                   shape: BoxShape.circle,
                 ),
-
                 child: Icon(
                   _iconFor(tipe),
-
                   color: _iconColor(tipe),
                 ),
               ),
-
               const SizedBox(width: 12),
-
-              // TEXT
 
               Expanded(
                 child: Column(

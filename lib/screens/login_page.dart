@@ -48,9 +48,8 @@ class _LoginPageState extends State<LoginPage>
       backgroundColor: const Color(0xFF6DB5FD),
       body: Column(
         children: [
-          const SizedBox(height: 100), // ← lebih besar, area biru makin lega
+          const SizedBox(height: 100),
 
-          /// TITLE
           const Text(
             "Masuk",
             style: TextStyle(
@@ -60,9 +59,8 @@ class _LoginPageState extends State<LoginPage>
             ),
           ),
 
-          const SizedBox(height: 60), // ← lebih besar, "Masuk" makin turun
+          const SizedBox(height: 60), 
 
-          /// CARD
           Expanded(
             child: Container(
               padding: const EdgeInsets.all(25),
@@ -76,9 +74,8 @@ class _LoginPageState extends State<LoginPage>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 40), // ← lebih besar, Email turun
+                    const SizedBox(height: 40), 
 
-                    /// EMAIL
                     labeledInput(
                       label: "Email",
                       hint: "example@email.com",
@@ -90,7 +87,6 @@ class _LoginPageState extends State<LoginPage>
 
                     const SizedBox(height: 20),
 
-                    /// PASSWORD
                     labeledInput(
                       label: "Password",
                       hint: "••••••••",
@@ -103,7 +99,6 @@ class _LoginPageState extends State<LoginPage>
 
                     const SizedBox(height: 25),
 
-                    /// LOGIN BUTTON
                     primaryButton("Masuk", () async {
                       email = email.trim().toLowerCase();
                       password = password.trim();
@@ -155,7 +150,6 @@ class _LoginPageState extends State<LoginPage>
 
                     const SizedBox(height: 20),
 
-                    /// FOOTER
                     Center(
                       child: GestureDetector(
                         onTap: () {

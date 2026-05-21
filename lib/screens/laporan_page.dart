@@ -46,8 +46,6 @@ class _LaporanPageState extends State<LaporanPage> {
     super.dispose();
   }
 
-  // ── Data ──────────────────────────────
-
   Future<void> _loadLaporan() async {
     setState(() => loading = true);
 
@@ -114,8 +112,6 @@ class _LaporanPageState extends State<LaporanPage> {
     }
   }
 
-  // ── Computed ──────────────────────────
-
   List<Map<String, dynamic>> get _filtered {
     if (filter == 'semua') return transaksi;
     return transaksi.where((e) => e['jenis'] == filter).toList();
@@ -137,8 +133,6 @@ class _LaporanPageState extends State<LaporanPage> {
     final before = (previousSummary['total_pengeluaran'] ?? 0).toDouble();
     return now - before;
   }
-
-  // ── Build ─────────────────────────────
 
   @override
   Widget build(BuildContext context) {

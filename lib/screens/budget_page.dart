@@ -178,7 +178,6 @@ class _BudgetPageState extends State<BudgetPage> {
         bottom: false,
         child: CustomScrollView(
           slivers: [
-            // ── Header ──
             const SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
@@ -195,7 +194,6 @@ class _BudgetPageState extends State<BudgetPage> {
               ),
             ),
 
-            // ── Body ──
             SliverToBoxAdapter(
               child: Container(
                 constraints: BoxConstraints(
@@ -219,7 +217,6 @@ class _BudgetPageState extends State<BudgetPage> {
                     : Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Budget cards
                           ...budgets.map(
                             (e) => BudgetCard(
                               budget: e,

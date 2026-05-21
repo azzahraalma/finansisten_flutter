@@ -17,12 +17,12 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _navigate(); // ← FlutterNativeSplash.remove() sudah dipindah ke dalam _navigate()
+    _navigate(); 
   }
 
   Future<void> _navigate() async {
     await Future.delayed(const Duration(seconds: 2));
-    FlutterNativeSplash.remove(); // ← di sini
+    FlutterNativeSplash.remove(); 
 
     final auth = LocalAuthService();
     final isLoggedIn = await auth.isLoggedIn();

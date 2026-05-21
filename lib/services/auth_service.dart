@@ -7,12 +7,10 @@ class AuthService {
 
   final _auth = FirebaseAuth.instance;
 
-  // ── Ambil user yang sedang login ──────────────────────
   User? get currentUser => _auth.currentUser;
 
   String? get currentUserId => _auth.currentUser?.uid;
 
-  // ── Register ──────────────────────────────────────────
   Future<bool> register(String email, String password) async {
     try {
       await _auth.createUserWithEmailAndPassword(
@@ -25,7 +23,6 @@ class AuthService {
     }
   }
 
-  // ── Login ─────────────────────────────────────────────
   Future<bool> login(String email, String password) async {
     try {
       await _auth.signInWithEmailAndPassword(
@@ -38,10 +35,8 @@ class AuthService {
     }
   }
 
-  // ── Logout ────────────────────────────────────────────
   Future<void> logout() async {
     await _auth.signOut();
-    // Simpan profile image, clear prefs sisanya
     final prefs = await SharedPreferences.getInstance();
     final uid = currentUserId;
     final savedImage = uid != null ? prefs.getString('profile_image_$uid') : null;
@@ -51,22 +46,17 @@ class AuthService {
     }
   }
 
-  // ── Cek login ─────────────────────────────────────────
   bool isLoggedIn() => _auth.currentUser != null;
 
-  // ── Get user ID (UID Firebase, bukan integer) ─────────
   String? getUserId() => _auth.currentUser?.uid;
 
-  // ── Get user email ────────────────────────────────────
   String? getUserEmail() => _auth.currentUser?.email;
 
-  // ── Update password ───────────────────────────────────
   Future<bool> updatePassword(String oldPassword, String newPassword) async {
     try {
       final user = _auth.currentUser;
       if (user == null || user.email == null) return false;
 
-      // Re-authenticate dulu sebelum ganti password
       final cred = EmailAuthProvider.credential(
         email: user.email!,
         password: oldPassword,
@@ -79,7 +69,6 @@ class AuthService {
     }
   }
 
-  // ── Profile image (tetap pakai SharedPreferences) ─────
   Future<void> saveProfileImage(String path) async {
     final prefs = await SharedPreferences.getInstance();
     final uid = currentUserId;

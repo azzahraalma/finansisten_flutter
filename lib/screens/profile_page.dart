@@ -32,7 +32,6 @@ class _ProfilePageState extends State<ProfilePage> {
   final usernameController = TextEditingController();
   final emailController = TextEditingController();
 
-  // Jumlah karakter password — diambil dari field 'password_length' di Firestore
   int passwordLength = 0;
 
   String? profileImagePath;
@@ -51,8 +50,6 @@ class _ProfilePageState extends State<ProfilePage> {
     super.dispose();
   }
 
-  // ── Data ──────────────────────────────
-
   Future<void> _loadUser() async {
     final uid = _auth.getUserId();
     if (uid == null) return;
@@ -69,7 +66,6 @@ class _ProfilePageState extends State<ProfilePage> {
         userData = cleaned;
         usernameController.text = cleaned['username'];
         emailController.text = cleaned['email'];
-        // Ambil password_length; default 8 kalau belum tersimpan
         passwordLength = (result['password_length'] as num?)?.toInt() ?? 8;
         isLoading = false;
       });
@@ -137,8 +133,6 @@ class _ProfilePageState extends State<ProfilePage> {
     _showTopSnack("Profil berhasil diperbarui");
   }
 
-  // ── Dialogs ───────────────────────────
-
   void _showGantiPasswordDialog() {
     showDialog(
       context: context,
@@ -148,7 +142,6 @@ class _ProfilePageState extends State<ProfilePage> {
           final uid = _auth.getUserId();
           if (uid == null) return;
 
-          // Simpan panjang password baru ke Firestore
           await _db.updateUserProfile(uid, {
             'password_length': newPassword.length,
           });
@@ -181,8 +174,6 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
-
-  // ── Snack ─────────────────────────────
 
   void _showTopSnack(String msg, {bool isError = false}) {
     final overlay = Overlay.of(context);
@@ -223,8 +214,6 @@ class _ProfilePageState extends State<ProfilePage> {
     Future.delayed(const Duration(seconds: 2), () => entry.remove());
   }
 
-  // ── Build ─────────────────────────────
-
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
@@ -236,7 +225,6 @@ class _ProfilePageState extends State<ProfilePage> {
     final username = userData?['username']?.toString().trim() ?? '-';
     final email = userData?['email']?.toString().trim() ?? '-';
 
-    // Buat string bullet sesuai jumlah karakter password
     final passwordBullets = '●' * passwordLength;
 
     return Scaffold(
@@ -245,7 +233,6 @@ class _ProfilePageState extends State<ProfilePage> {
         bottom: false,
         child: Column(
           children: [
-            // HEADER
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 14),
               child: Text(
@@ -258,7 +245,6 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
 
-            // AVATAR
             ProfileAvatar(
               profileImagePath: profileImagePath,
               username: username,
@@ -268,7 +254,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
             const SizedBox(height: 18),
 
-            // BODY PUTIH
             Expanded(
               child: Container(
                 width: double.infinity,
@@ -284,7 +269,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // USERNAME
                       ProfileFieldInput(
                         label: "Username",
                         controller: usernameController,
@@ -295,7 +279,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
                       const SizedBox(height: 20),
 
-                      // EMAIL
                       ProfileFieldInput(
                         label: "Email",
                         controller: emailController,
@@ -307,7 +290,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
                       const SizedBox(height: 20),
 
-                      // PASSWORD (read-only, tampil bullet sesuai panjang)
                       _PasswordDisplayField(
                         bullets: passwordBullets,
                         onGantiPassword: _showGantiPasswordDialog,
@@ -330,8 +312,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 }
-
-// ── Widget password read-only ─────────────────────────────────────────────────
 
 class _PasswordDisplayField extends StatelessWidget {
   const _PasswordDisplayField({

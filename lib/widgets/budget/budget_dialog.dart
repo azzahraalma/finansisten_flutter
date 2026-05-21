@@ -47,57 +47,62 @@ class _BudgetDialogState extends State<BudgetDialog> {
   late List<Map<String, dynamic>> kategoriList;
 
   @override
-void initState() {
-  super.initState();
-  kategoriList = List.from(widget.kategoriList);
+  void initState() {
+    super.initState();
+    kategoriList = List.from(widget.kategoriList);
 
-  limitController = TextEditingController(
-    text: widget.budget != null
-        ? (widget.budget!['limit_amount'] as num).toStringAsFixed(0)
-        : '',
-  );
-  priorityController = TextEditingController(
-    text: widget.budget != null
-        ? '${(widget.budget!['priority'] as num? ?? 1).toInt()}'
-        : '',
-  );
+    limitController = TextEditingController(
+      text: widget.budget != null
+          ? (widget.budget!['limit_amount'] as num).toStringAsFixed(0)
+          : '',
+    );
 
-  selectedKategori = widget.budget?['kategori_id']?.toString();
+    priorityController = TextEditingController(
+      text: widget.budget != null
+          ? '${(widget.budget!['priority'] as num? ?? 1).toInt()}'
+          : '',
+    );
 
-  if (selectedKategori != null &&
-      !kategoriList.any((e) => e['id'] == selectedKategori)) {
-    selectedKategori = null;
+    selectedKategori = widget.budget?['kategori_id']?.toString();
+
+    if (selectedKategori != null &&
+        !kategoriList.any((e) => e['id'] == selectedKategori)) {
+      selectedKategori = null;
+    }
+
+    if (kategoriList.isEmpty) {
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _ensureDefaultKategori());
+    }
   }
 
-  // Tambahan: load default kalau kosong
-  if (kategoriList.isEmpty) {
-    WidgetsBinding.instance.addPostFrameCallback((_) => _ensureDefaultKategori());
+  Future<void> _ensureDefaultKategori() async {
+    final userId = await auth.getUserId();
+    if (userId == null) return;
+
+    final existing =
+        await db.getKategoriByUser(userId, jenis: 'pengeluaran');
+
+    if (existing.isNotEmpty) {
+      setState(() => kategoriList = existing);
+      return;
+    }
+
+    final defaults = ['Belanja', 'Kost', 'Transportasi', 'Makanan'];
+
+    for (final nama in defaults) {
+      await db.insertKategori({
+        'user_id': userId,
+        'nama': nama,
+        'jenis': 'pengeluaran',
+      });
+    }
+
+    final updated =
+        await db.getKategoriByUser(userId, jenis: 'pengeluaran');
+
+    setState(() => kategoriList = updated);
   }
-}
-
-Future<void> _ensureDefaultKategori() async {
-  final userId = await auth.getUserId();
-  if (userId == null) return;
-
-  final existing = await db.getKategoriByUser(userId, jenis: 'pengeluaran');
-  if (existing.isNotEmpty) {
-    setState(() => kategoriList = existing);
-    return;
-  }
-
-  // Insert default kategori pengeluaran
-  final defaults = ['Belanja', 'Kost', 'Transportasi', 'Makanan'];
-  for (final nama in defaults) {
-    await db.insertKategori({
-      'user_id': userId,
-      'nama': nama,
-      'jenis': 'pengeluaran',
-    });
-  }
-
-  final updated = await db.getKategoriByUser(userId, jenis: 'pengeluaran');
-  setState(() => kategoriList = updated);
-}
 
   @override
   void dispose() {
@@ -108,6 +113,7 @@ Future<void> _ensureDefaultKategori() async {
 
   Future<void> _handleTambahKategori() async {
     final hasil = await TambahKategoriDialog.show(context);
+
     if (hasil != null && hasil.isNotEmpty) {
       final userId = await auth.getUserId();
       if (userId == null) return;
@@ -137,6 +143,7 @@ Future<void> _ensureDefaultKategori() async {
     }
 
     final limit = double.tryParse(limitController.text.trim());
+
     if (limit == null || limit <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Nominal tidak valid')),
@@ -144,7 +151,9 @@ Future<void> _ensureDefaultKategori() async {
       return;
     }
 
-    final priority = int.tryParse(priorityController.text.trim()) ?? 1;
+    final priority =
+        int.tryParse(priorityController.text.trim()) ?? 1;
+
     final userId = await auth.getUserId();
     if (userId == null) return;
 
@@ -159,16 +168,25 @@ Future<void> _ensureDefaultKategori() async {
     if (widget.budget == null) {
       await db.insertBudget(data);
     } else {
-      await db.updateBudget({...data, 'id': widget.budget!['id']});
+      await db.updateBudget({
+        ...data,
+        'id': widget.budget!['id'],
+      });
     }
 
     if (!mounted) return;
+
     Navigator.pop(context);
     widget.onSaved();
   }
 
   @override
   Widget build(BuildContext context) {
+    final selectedNama = kategoriList
+        .where((e) => e['id']?.toString() == selectedKategori)
+        .map((e) => e['nama'].toString())
+        .toList();
+
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 24),
@@ -190,7 +208,6 @@ Future<void> _ensureDefaultKategori() async {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Header ──
               Center(
                 child: Container(
                   width: 64,
@@ -199,59 +216,125 @@ Future<void> _ensureDefaultKategori() async {
                     color: const Color.fromARGB(255, 201, 232, 255),
                     borderRadius: BorderRadius.circular(18),
                   ),
-                  child: const Icon(Icons.calculate_outlined,
-                      size: 30, color: Color(0xFF012249)),
+                  child: const Icon(
+                    Icons.calculate_outlined,
+                    size: 30,
+                    color: Color(0xFF012249),
+                  ),
                 ),
               ),
+
               const SizedBox(height: 14),
+
               Center(
                 child: Text(
-                  widget.budget == null ? 'Tambah Budget' : 'Edit Budget',
+                  widget.budget == null
+                      ? 'Tambah Budget'
+                      : 'Edit Budget',
                   style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF012249)),
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF012249),
+                  ),
                 ),
               ),
+
               const SizedBox(height: 4),
+
               const Center(
-                child: Text('untuk pengeluaran kamu',
-                    style: TextStyle(fontSize: 13, color: Colors.grey)),
+                child: Text(
+                  'untuk pengeluaran kamu',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey,
+                  ),
+                ),
               ),
+
               const SizedBox(height: 24),
 
-              // ── Kategori ──
               _label('Kategori'),
               const SizedBox(height: 8),
+
               _inputBox(
                 child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String?>(
+                  child: DropdownButton<String>(
                     value: selectedKategori,
                     isExpanded: true,
-                    hint: const Text('Pilih kategori',
-                        style: TextStyle(fontSize: 14)),
+                    dropdownColor: const Color(0xFF012249),
+                    icon: const Icon(
+                      Icons.arrow_drop_down,
+                      color: Color(0xFF012249),
+                    ),
+
+                    selectedItemBuilder: (context) => [
+                      ...kategoriList.map(
+                        (e) => Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            e['nama'].toString(),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF012249),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Tambah Kategori',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF012249),
+                          ),
+                        ),
+                      ),
+                    ],
+
+                    hint: const Text(
+                      'Pilih kategori',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF012249),
+                      ),
+                    ),
+
                     items: [
                       ...kategoriList.map(
                         (e) => DropdownMenuItem<String>(
                           value: e['id']?.toString(),
-                          child: Text(e['nama'] as String,
-                              style: const TextStyle(
-                                  fontSize: 14, color: Color(0xFF012249))),
+                          child: Text(
+                            e['nama'].toString(),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: e['id']?.toString() ==
+                                      selectedKategori
+                                  ? const Color(0xFF6DB5FD)
+                                  : Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ),
-                      const DropdownMenuItem<String>(
+
+                      DropdownMenuItem<String>(
                         value: 'add',
-                        child: Row(children: [
-                          Icon(Icons.add, size: 18, color: Color(0xFF012249)),
-                          SizedBox(width: 8),
-                          Text('Tambah Kategori',
-                              style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF012249))),
-                        ]),
+                        child: Text(
+                          'Tambah Kategori',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: selectedKategori == 'add'
+                                ? const Color(0xFF6DB5FD)
+                                : Colors.white,
+                          ),
+                        ),
                       ),
                     ],
+
                     onChanged: (v) async {
                       if (v == 'add') {
                         await _handleTambahKategori();
@@ -262,17 +345,20 @@ Future<void> _ensureDefaultKategori() async {
                   ),
                 ),
               ),
+
               const SizedBox(height: 16),
 
-              // ── Limit ──
               _label('Limit Budget'),
               const SizedBox(height: 8),
+
               _inputBox(
                 child: TextField(
                   controller: limitController,
                   keyboardType: TextInputType.number,
                   style: const TextStyle(
-                      color: Color(0xFF012249), fontSize: 14),
+                    color: Color(0xFF012249),
+                    fontSize: 14,
+                  ),
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     contentPadding:
@@ -282,73 +368,99 @@ Future<void> _ensureDefaultKategori() async {
                       child: Align(
                         alignment: Alignment.centerLeft,
                         widthFactor: 1,
-                        child: Text('Rp',
-                            style: TextStyle(
-                                color: Color(0xFF012249),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14)),
+                        child: Text(
+                          'Rp',
+                          style: TextStyle(
+                            color: Color(0xFF012249),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
+
               const SizedBox(height: 16),
 
-              // ── Prioritas ──
               _label('Skala Prioritas'),
               const SizedBox(height: 8),
+
               _inputBox(
                 child: TextField(
                   controller: priorityController,
                   keyboardType: TextInputType.number,
                   style: const TextStyle(
-                      color: Color(0xFF012249), fontSize: 14),
+                    color: Color(0xFF012249),
+                    fontSize: 14,
+                  ),
                   decoration: const InputDecoration(
                     border: InputBorder.none,
                     hintText: 'Contoh: 1, 2, 3...',
                     hintStyle: TextStyle(
-                        fontSize: 13,
-                        color: Color.fromARGB(255, 131, 131, 142)),
-                    contentPadding: EdgeInsets.symmetric(vertical: 14),
+                      fontSize: 13,
+                      color: Color.fromARGB(255, 131, 131, 142),
+                    ),
+                    contentPadding:
+                        EdgeInsets.symmetric(vertical: 14),
                   ),
                 ),
               ),
+
               const SizedBox(height: 28),
 
-              // ── Tombol ──
               Row(
                 children: [
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
-                        minimumSize: const Size(double.infinity, 50),
-                        side: BorderSide(color: Colors.grey.shade300),
+                        minimumSize:
+                            const Size(double.infinity, 50),
+                        side: BorderSide(
+                          color: Colors.grey.shade300,
+                        ),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16)),
+                          borderRadius:
+                              BorderRadius.circular(16),
+                        ),
                       ),
-                      child: const Text('Batal',
-                          style: TextStyle(
-                              fontSize: 15,
-                              color: Colors.grey,
-                              fontWeight: FontWeight.w600)),
+                      child: const Text(
+                        'Batal',
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Colors.grey,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
+
                   const SizedBox(width: 12),
+
                   Expanded(
                     child: ElevatedButton(
                       onPressed: _save,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6DB5FD),
+                        backgroundColor:
+                            const Color(0xFF6DB5FD),
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        minimumSize: const Size(double.infinity, 50),
+                        minimumSize:
+                            const Size(double.infinity, 50),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16)),
+                          borderRadius:
+                              BorderRadius.circular(16),
+                        ),
                       ),
-                      child: const Text('Simpan',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 15)),
+                      child: const Text(
+                        'Simpan',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -363,9 +475,10 @@ Future<void> _ensureDefaultKategori() async {
   Widget _label(String text) => Text(
         text,
         style: const TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 13,
-            color: Color(0xFF012249)),
+          fontWeight: FontWeight.w600,
+          fontSize: 13,
+          color: Color(0xFF012249),
+        ),
       );
 
   Widget _inputBox({required Widget child}) => Container(

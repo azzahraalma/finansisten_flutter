@@ -50,8 +50,6 @@ class _HomePageState extends State<HomePage> {
     _loadData();
   }
 
-  // ── DATA ──────────────────────────────────────────────
-
   Future<void> _loadData() async {
     userId = auth.getUserId();
     if (userId == null) return;
@@ -59,7 +57,6 @@ class _HomePageState extends State<HomePage> {
     final transaksi = await db.getTransaksiByUser(userId!);
     final kategori = await db.getKategoriByUser(userId!);
 
-    // Deduplikat kategori (id sudah String, tidak perlu .toInt())
     List<Map<String, dynamic>> deduped = [];
     for (var item in kategori) {
       final exists = deduped.any((e) =>
@@ -121,7 +118,6 @@ class _HomePageState extends State<HomePage> {
       {'nama': 'Makanan', 'jenis': 'pengeluaran'},
     ];
     for (var k in defaults) {
-      // uid sebagai arg pertama, terpisah dari Map
       await db.insertKategori(userId!, k);
     }
   }
@@ -150,8 +146,6 @@ class _HomePageState extends State<HomePage> {
     return deduped;
   }
 
-  // ── ACTIONS ───────────────────────────────────────────
-
   Future<void> _tambahTransaksi() async {
     if (userId == null) {
       _showTopSnack('User belum login',
@@ -170,7 +164,6 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
-    // Cari atau buat kategori — uid sebagai arg pertama
     String kategoriId;
     final existing = kategoriList.where((k) =>
         k['nama'].toString().toLowerCase().trim() ==
@@ -186,7 +179,6 @@ class _HomePageState extends State<HomePage> {
       );
     }
 
-    // Insert transaksi — uid sebagai arg pertama
     final transaksiId = await db.insertTransaksi(userId!, {
       'kategori_id': kategoriId,
       'jumlah': amount,
@@ -198,7 +190,11 @@ class _HomePageState extends State<HomePage> {
     setState(() => selectedKategori = null);
     await _loadData();
     if (!mounted) return;
-    _showSuccessPopup();
+    _showSuccessPopup(
+      icon: Icons.check_circle,
+      iconColor: const Color(0xFF6DB5FD),
+      message: 'Transaksi Berhasil\nDitambahkan',
+    );
 
     await _addNotifikasi(
       judul: 'Transaksi Berhasil',
@@ -226,84 +222,98 @@ class _HomePageState extends State<HomePage> {
     final confirm = await showDialog<bool>(
       context: context,
       barrierColor: Colors.black.withOpacity(0.35),
-      builder: (_) => Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 28),
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: [
-              BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 25,
-                  offset: const Offset(0, 10))
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                    color: const Color(0xFFFFEBEB),
-                    borderRadius: BorderRadius.circular(18)),
-                child: const Icon(Icons.delete_outline,
-                    size: 30, color: Colors.red),
-              ),
-              const SizedBox(height: 16),
-              const Text('Hapus Transaksi',
+      builder: (_) => Material(
+        type: MaterialType.transparency,
+        child: Center(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 28),
+            padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 25,
+                    offset: const Offset(0, 10))
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                      color: const Color(0xFFFFEBEB),
+                      borderRadius: BorderRadius.circular(18)),
+                  child: const Icon(Icons.delete_outline,
+                      size: 30, color: Colors.red),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Hapus Transaksi',
                   style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF012249))),
-              const SizedBox(height: 6),
-              const Text('Yakin mau hapus transaksi ini?',
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF012249),
+                    decoration: TextDecoration.none,
+                    decorationColor: Colors.transparent,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Yakin mau hapus transaksi ini?',
                   textAlign: TextAlign.center,
-                  style:
-                      TextStyle(fontSize: 13, color: Colors.grey, height: 1.5)),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      style: OutlinedButton.styleFrom(
-                        minimumSize: const Size(double.infinity, 50),
-                        side: BorderSide(color: Colors.grey.shade300),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16)),
-                      ),
-                      child: const Text('Batal',
-                          style: TextStyle(
-                              fontSize: 15,
-                              color: Colors.grey,
-                              fontWeight: FontWeight.w600)),
-                    ),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey,
+                    height: 1.5,
+                    decoration: TextDecoration.none,
+                    decorationColor: Colors.transparent,
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context, true),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        elevation: 0,
-                        minimumSize: const Size(double.infinity, 50),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16)),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 50),
+                          side: BorderSide(color: Colors.grey.shade300),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
+                        ),
+                        child: const Text('Batal',
+                            style: TextStyle(
+                                fontSize: 15,
+                                color: Colors.grey,
+                                fontWeight: FontWeight.w600)),
                       ),
-                      child: const Text('Hapus',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15)),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          elevation: 0,
+                          minimumSize: const Size(double.infinity, 50),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
+                        ),
+                        child: const Text('Hapus',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15)),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -311,9 +321,13 @@ class _HomePageState extends State<HomePage> {
 
     if (confirm == true) {
       await db.deleteTransaksi(userId!, id);
-      _showTopSnack('Transaksi berhasil dihapus',
-          icon: Icons.delete_outline, iconColor: Colors.red);
       _loadData();
+      if (!mounted) return;
+      _showSuccessPopup(
+        icon: Icons.delete_outline,
+        iconColor: Colors.red,
+        message: 'Transaksi Berhasil\nDihapus',
+      );
     }
   }
 
@@ -323,90 +337,113 @@ class _HomePageState extends State<HomePage> {
     showDialog(
       context: context,
       barrierColor: Colors.black.withOpacity(0.25),
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Edit Transaksi',
-            style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF012249))),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 201, 232, 255),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Row(
-                children: [
-                  const Text('Rp ',
-                      style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF012249))),
-                  Expanded(
-                    child: TextField(
-                      controller: controller,
-                      keyboardType: TextInputType.number,
-                      autofocus: true,
-                      cursorColor: const Color(0xFF012249),
-                      decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          hintText: 'Masukkan jumlah'),
-                    ),
-                  ),
-                ],
-              ),
+      builder: (context) => Material(
+        type: MaterialType.transparency,
+        child: Center(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 28),
+            padding: const EdgeInsets.fromLTRB(22, 24, 22, 20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
             ),
-          ],
-        ),
-        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-        actions: [
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.grey,
-                    side: BorderSide(color: Colors.grey.shade300),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Edit Transaksi',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF012249),
+                    decoration: TextDecoration.none,
+                    decorationColor: Colors.transparent,
                   ),
-                  child: const Text('Batal'),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6DB5FD),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  decoration: BoxDecoration(
+                    color: const Color.fromARGB(255, 201, 232, 255),
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                  onPressed: () async {
-                    final value = double.tryParse(
-                        controller.text.replaceAll('.', ''));
-                    if (value == null) return;
-                    if (userId == null) return;
-                    await db.updateTransaksi(
-                      userId!,
-                      t['id'].toString(),
-                      {'jumlah': value},
-                    );
-                    if (context.mounted) Navigator.pop(context);
-                    _loadData();
-                  },
-                  child: const Text('Simpan',
-                      style: TextStyle(color: Colors.white)),
+                  child: Row(
+                    children: [
+                      const Text(
+                        'Rp ',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF012249),
+                          decoration: TextDecoration.none,
+                          decorationColor: Colors.transparent,
+                        ),
+                      ),
+                      Expanded(
+                        child: TextField(
+                          controller: controller,
+                          keyboardType: TextInputType.number,
+                          autofocus: true,
+                          cursorColor: const Color(0xFF012249),
+                          style: const TextStyle(
+                            color: Color(0xFF012249),
+                            decoration: TextDecoration.none,
+                            decorationColor: Colors.transparent,
+                          ),
+                          decoration: const InputDecoration(
+                              border: InputBorder.none,
+                              hintText: 'Masukkan jumlah'),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.grey,
+                          side: BorderSide(color: Colors.grey.shade300),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                        ),
+                        child: const Text('Batal'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF6DB5FD),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                        ),
+                        onPressed: () async {
+                          final value = double.tryParse(
+                              controller.text.replaceAll('.', ''));
+                          if (value == null) return;
+                          if (userId == null) return;
+                          await db.updateTransaksi(
+                            userId!,
+                            t['id'].toString(),
+                            {'jumlah': value},
+                          );
+                          if (context.mounted) Navigator.pop(context);
+                          _loadData();
+                        },
+                        child: const Text('Simpan',
+                            style: TextStyle(color: Colors.white)),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -416,114 +453,131 @@ class _HomePageState extends State<HomePage> {
     final hasil = await showDialog<String>(
       context: context,
       barrierColor: Colors.black.withOpacity(0.35),
-      builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 28),
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(22, 24, 22, 22),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(30),
-            boxShadow: [
-              BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 25,
-                  offset: const Offset(0, 10))
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 201, 232, 255),
-                    borderRadius: BorderRadius.circular(22)),
-                child: const Icon(Icons.category_outlined,
-                    size: 34, color: Color(0xFF012249)),
-              ),
-              const SizedBox(height: 18),
-              const Text('Tambah Kategori',
+      builder: (context) => Material(
+        type: MaterialType.transparency,
+        child: Center(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 28),
+            padding: const EdgeInsets.fromLTRB(22, 24, 22, 22),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 25,
+                    offset: const Offset(0, 10))
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 201, 232, 255),
+                      borderRadius: BorderRadius.circular(22)),
+                  child: const Icon(Icons.category_outlined,
+                      size: 34, color: Color(0xFF012249)),
+                ),
+                const SizedBox(height: 18),
+                const Text(
+                  'Tambah Kategori',
                   style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF012249))),
-              const SizedBox(height: 4),
-              const Text('untuk transaksi kamu',
-                  textAlign: TextAlign.center,
-                  style:
-                      TextStyle(fontSize: 13, color: Colors.grey, height: 1.5)),
-              const SizedBox(height: 22),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 201, 232, 255),
-                    borderRadius: BorderRadius.circular(18)),
-                child: TextField(
-                  controller: ctrl,
-                  autofocus: true,
-                  style: const TextStyle(
-                      color: Color(0xFF012249),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500),
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    hintText: 'Contoh: Hiburan',
-                    contentPadding: EdgeInsets.symmetric(vertical: 16),
-                    hintStyle: TextStyle(color: Colors.grey),
-                    prefixIcon:
-                        Icon(Icons.edit_outlined, color: Color(0xFF012249)),
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF012249),
+                    decoration: TextDecoration.none,
+                    decorationColor: Colors.transparent,
                   ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: OutlinedButton.styleFrom(
-                        minimumSize: const Size(double.infinity, 52),
-                        side: BorderSide(color: Colors.grey.shade300),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16)),
-                      ),
-                      child: const Text('Batal',
-                          style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey,
-                              fontWeight: FontWeight.w600)),
+                const SizedBox(height: 4),
+                const Text(
+                  'untuk transaksi kamu',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey,
+                    height: 1.5,
+                    decoration: TextDecoration.none,
+                    decorationColor: Colors.transparent,
+                  ),
+                ),
+                const SizedBox(height: 22),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 201, 232, 255),
+                      borderRadius: BorderRadius.circular(18)),
+                  child: TextField(
+                    controller: ctrl,
+                    autofocus: true,
+                    style: const TextStyle(
+                      color: Color(0xFF012249),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      decoration: TextDecoration.none,
+                      decorationColor: Colors.transparent,
+                    ),
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      hintText: 'Contoh: Hiburan',
+                      contentPadding: EdgeInsets.symmetric(vertical: 16),
+                      hintStyle: TextStyle(color: Colors.grey),
+                      prefixIcon:
+                          Icon(Icons.edit_outlined, color: Color(0xFF012249)),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context, ctrl.text.trim()),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6DB5FD),
-                        elevation: 0,
-                        minimumSize: const Size(double.infinity, 52),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16)),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 52),
+                          side: BorderSide(color: Colors.grey.shade300),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
+                        ),
+                        child: const Text('Batal',
+                            style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey,
+                                fontWeight: FontWeight.w600)),
                       ),
-                      child: const Text('Tambah',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16)),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () =>
+                            Navigator.pop(context, ctrl.text.trim()),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF6DB5FD),
+                          elevation: 0,
+                          minimumSize: const Size(double.infinity, 52),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
+                        ),
+                        child: const Text('Tambah',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16)),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
 
     if (hasil != null && hasil.isNotEmpty && userId != null) {
-      // uid sebagai arg pertama, terpisah dari Map
       await db.insertKategori(
         userId!,
         {'nama': hasil, 'jenis': selectedJenis},
@@ -543,7 +597,6 @@ class _HomePageState extends State<HomePage> {
     String tipe = 'transaksi',
   }) async {
     if (userId == null) return;
-    // uid sebagai arg pertama, terpisah dari Map
     await db.insertNotification(userId!, {
       'tipe': tipe,
       'judul': judul,
@@ -565,8 +618,6 @@ class _HomePageState extends State<HomePage> {
       hasNotification = true;
     });
   }
-
-  // ── UI HELPERS ────────────────────────────────────────
 
   void _showTopSnack(
     String text, {
@@ -605,12 +656,16 @@ class _HomePageState extends State<HomePage> {
                   Icon(icon, color: iconColor, size: 20),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: Text(text,
-                        style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF012249),
-                            decoration: TextDecoration.none)),
+                    child: Text(
+                      text,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF012249),
+                        decoration: TextDecoration.none,
+                        decorationColor: Colors.transparent,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -623,34 +678,44 @@ class _HomePageState extends State<HomePage> {
     Future.delayed(const Duration(seconds: 2), () => entry.remove());
   }
 
-  void _showSuccessPopup() {
+  void _showSuccessPopup({
+    required IconData icon,
+    required Color iconColor,
+    required String message,
+  }) {
     showDialog(
       context: context,
       barrierDismissible: false,
       barrierColor: Colors.black.withOpacity(0.4),
-      builder: (_) => Center(
-        child: Container(
-          width: 260,
-          padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
-          decoration: BoxDecoration(
-              color: Colors.white, borderRadius: BorderRadius.circular(24)),
-          child: const Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.check_circle, size: 80, color: Color(0xFF6DB5FD)),
-              SizedBox(height: 16),
-              Text(
-                'Transaksi Berhasil\nDitambahkan',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  decoration: TextDecoration.none,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF012249),
-                  height: 1.4,
+      builder: (_) => Material(
+        type: MaterialType.transparency,
+        child: Center(
+          child: Container(
+            width: 260,
+            padding:
+                const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24)),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 80, color: iconColor),
+                const SizedBox(height: 16),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    decoration: TextDecoration.none,
+                    decorationColor: Colors.transparent,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF012249),
+                    height: 1.4,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -659,16 +724,14 @@ class _HomePageState extends State<HomePage> {
         () { if (mounted) Navigator.pop(context); });
   }
 
-  // ── BUILD ─────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
     final pages = [
-  _buildTransaksiPage(),
-  BudgetPage(key: UniqueKey()),
-  const LaporanPage(),
-  ProfilePage(),
-];
+      _buildTransaksiPage(),
+      BudgetPage(key: UniqueKey()),
+      const LaporanPage(),
+      ProfilePage(),
+    ];
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -699,7 +762,6 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Header ──
             Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -753,7 +815,6 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
 
-            // ── Summary ──
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
@@ -774,17 +835,15 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 12),
 
-            // ── Tambah Transaksi ──
             TambahTransaksiCard(
               amountController: amountController,
               selectedJenis: selectedJenis,
               selectedKategori: selectedKategori,
               kategoriItems: _getKategoriItems(),
-              onJenisChanged: (v) => setState(
-                  () {
-                    selectedJenis = v;
-                    selectedKategori = null;
-                  }),
+              onJenisChanged: (v) => setState(() {
+                selectedJenis = v;
+                selectedKategori = null;
+              }),
               onKategoriChanged: (v) =>
                   setState(() => selectedKategori = v),
               onTambah: _tambahTransaksi,
@@ -792,7 +851,6 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 16),
 
-            // ── List Transaksi ──
             Expanded(
               child: TransaksiList(
                 items: _getFilteredTransaksi(),

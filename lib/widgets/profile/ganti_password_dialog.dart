@@ -9,7 +9,6 @@ class GantiPasswordDialog extends StatefulWidget {
     required this.onError,
   });
 
-  // onSave menerima newPassword plaintext — caller yang simpan password_length
   final Future<void> Function(String newPassword) onSave;
   final void Function(String message) onError;
 
@@ -59,7 +58,6 @@ class _GantiPasswordDialogState extends State<GantiPasswordDialog> {
 
     setState(() => _isLoading = true);
 
-    // AuthService.updatePassword handles re-authentication
     final success = await _auth.updatePassword(oldPass, newPass);
 
     setState(() => _isLoading = false);
@@ -77,6 +75,8 @@ class _GantiPasswordDialogState extends State<GantiPasswordDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
+      backgroundColor: Colors.white,
+      elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       insetPadding: const EdgeInsets.symmetric(horizontal: 24),
       child: Padding(

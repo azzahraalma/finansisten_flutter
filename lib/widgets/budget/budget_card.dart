@@ -45,7 +45,6 @@ class BudgetCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // ── Icon ──
           Container(
             width: 48,
             height: 48,
@@ -57,7 +56,6 @@ class BudgetCard extends StatelessWidget {
           ),
           const SizedBox(width: 12),
 
-          // ── Konten ──
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,7 +70,6 @@ class BudgetCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
 
-                // Progress bar
                 Stack(
                   alignment: Alignment.centerLeft,
                   children: [
@@ -104,7 +101,6 @@ class BudgetCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 5),
 
-                // Persen + status
                 Row(
                   children: [
                     Text(
@@ -145,7 +141,6 @@ class BudgetCard extends StatelessWidget {
           ),
           const SizedBox(width: 10),
 
-          // ── Aksi ──
           Row(
             children: [
               _actionBtn(

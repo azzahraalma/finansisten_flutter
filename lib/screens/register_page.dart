@@ -185,7 +185,6 @@ class _RegisterPageState extends State<RegisterPage> {
                       if (success) {
                         final uid = auth.getUserId();
                         if (uid != null) {
-                          // Simpan profile + password_length (bukan password plaintext)
                           await db.saveUserProfile(uid, {
                             'username': username,
                             'email': email,
