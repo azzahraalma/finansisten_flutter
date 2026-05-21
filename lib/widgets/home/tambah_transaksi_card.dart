@@ -161,7 +161,7 @@ class TambahTransaksiCard extends StatelessWidget {
 
                       hint: const Text(
                         'Pilih Kategori',
-                        textAlign: TextAlign.left,  // 🔥 GANTI jadi LEFT
+                        textAlign: TextAlign.left, 
                         style: TextStyle(
                           fontSize: 13,
                           color: Color(0xFF012249),
@@ -172,10 +172,10 @@ class TambahTransaksiCard extends StatelessWidget {
                         return [
                           ...kategoriItems.map(
                             (k) => Align(
-                              alignment: Alignment.centerLeft,  // 🔥 GANTI jadi LEFT
+                              alignment: Alignment.centerLeft, 
                               child: Text(
                                 k['nama'],
-                                textAlign: TextAlign.left,  // 🔥 GANTI jadi LEFT
+                                textAlign: TextAlign.left, 
                                 style: const TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
@@ -185,7 +185,7 @@ class TambahTransaksiCard extends StatelessWidget {
                             ),
                           ),
                           const Align(
-                            alignment: Alignment.centerLeft,  // 🔥 GANTI jadi LEFT
+                            alignment: Alignment.centerLeft,
                             child: Text(
                               'Tambah Kategori',
                               style: TextStyle(
