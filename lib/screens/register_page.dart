@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:finansisten/database/firestore_service.dart';
 import '../services/auth_service.dart';
 import '../widgets/terms_overlay.dart';
+import 'homepage.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -193,10 +194,11 @@ class _RegisterPageState extends State<RegisterPage> {
                         }
                         setState(() => isLoading = false);
                         if (!mounted) return;
-                        _showSnack("Registrasi berhasil! Silakan login");
-                        await Future.delayed(const Duration(milliseconds: 800));
-                        if (!mounted) return;
-                        Navigator.pop(context);
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (_) => const HomePage()),
+                          (route) => false,
+                        );
                       } else {
                         setState(() => isLoading = false);
                         _showSnack("Email sudah terdaftar");
