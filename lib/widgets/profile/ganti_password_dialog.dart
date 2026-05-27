@@ -5,12 +5,12 @@ import 'package:finansisten/services/auth_service.dart';
 class GantiPasswordDialog extends StatefulWidget {
   const GantiPasswordDialog({
     super.key,
-    required this.userEmail,  // 🔥 TAMBAHKAN INI
+    required this.userEmail, 
     required this.onSave,
     required this.onError,
   });
 
-  final String userEmail;  // 🔥 TAMBAHKAN INI
+  final String userEmail;  
   final Future<void> Function(String newPassword) onSave;
   final void Function(String message) onError;
 

@@ -40,6 +40,7 @@ class TambahTransaksiCard extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
               'Tambah Transaksi',
@@ -98,15 +99,12 @@ class TambahTransaksiCard extends StatelessWidget {
                           Icons.arrow_drop_down,
                           color: Color(0xFF012249),
                         ),
-
                         selectedItemBuilder: (context) {
                           return ['pemasukan', 'pengeluaran'].map((e) {
                             return Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
-                                e == 'pemasukan'
-                                    ? 'Pemasukan'
-                                    : 'Pengeluaran',
+                                e == 'pemasukan' ? 'Pemasukan' : 'Pengeluaran',
                                 style: const TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
@@ -116,14 +114,11 @@ class TambahTransaksiCard extends StatelessWidget {
                             );
                           }).toList();
                         },
-
                         items: ['pemasukan', 'pengeluaran'].map((e) {
                           return DropdownMenuItem<String>(
                             value: e,
                             child: Text(
-                              e == 'pemasukan'
-                                  ? 'Pemasukan'
-                                  : 'Pengeluaran',
+                              e == 'pemasukan' ? 'Pemasukan' : 'Pengeluaran',
                               style: const TextStyle(
                                 fontSize: 13,
                                 color: Colors.white,
@@ -132,7 +127,6 @@ class TambahTransaksiCard extends StatelessWidget {
                             ),
                           );
                         }).toList(),
-
                         onChanged: (v) {
                           if (v != null) onJenisChanged(v);
                         },
@@ -158,24 +152,22 @@ class TambahTransaksiCard extends StatelessWidget {
                         Icons.arrow_drop_down,
                         color: Color(0xFF012249),
                       ),
-
                       hint: const Text(
                         'Pilih Kategori',
-                        textAlign: TextAlign.left, 
+                        textAlign: TextAlign.left,
                         style: TextStyle(
                           fontSize: 13,
                           color: Color(0xFF012249),
                         ),
                       ),
-
                       selectedItemBuilder: (context) {
                         return [
                           ...kategoriItems.map(
                             (k) => Align(
-                              alignment: Alignment.centerLeft, 
+                              alignment: Alignment.centerLeft,
                               child: Text(
                                 k['nama'],
-                                textAlign: TextAlign.left, 
+                                textAlign: TextAlign.left,
                                 style: const TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
@@ -197,7 +189,6 @@ class TambahTransaksiCard extends StatelessWidget {
                           ),
                         ];
                       },
-
                       items: [
                         ...kategoriItems.map(
                           (k) => DropdownMenuItem<String>(
@@ -216,17 +207,12 @@ class TambahTransaksiCard extends StatelessWidget {
                             ),
                           ),
                         ),
-
                         const DropdownMenuItem<String>(
                           value: '__tambah__',
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              Icon(
-                                Icons.add,
-                                size: 18,
-                                color: Colors.white,
-                              ),
+                              Icon(Icons.add, size: 18, color: Colors.white),
                               SizedBox(width: 6),
                               Text(
                                 'Tambah Kategori',
@@ -240,7 +226,6 @@ class TambahTransaksiCard extends StatelessWidget {
                           ),
                         ),
                       ],
-
                       onChanged: (value) {
                         if (value == '__tambah__') {
                           onTambahKategori();
@@ -253,7 +238,7 @@ class TambahTransaksiCard extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             Center(
               child: ElevatedButton.icon(
                 onPressed: onTambah,
@@ -263,8 +248,7 @@ class TambahTransaksiCard extends StatelessWidget {
                   style: TextStyle(fontSize: 14),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      const Color.fromARGB(255, 201, 232, 255),
+                  backgroundColor: const Color.fromARGB(255, 201, 232, 255),
                   foregroundColor: const Color(0xFF012249),
                   elevation: 0,
                   shape: const StadiumBorder(),

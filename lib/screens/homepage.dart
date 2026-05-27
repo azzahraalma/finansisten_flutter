@@ -453,124 +453,129 @@ class _HomePageState extends State<HomePage> {
     final hasil = await showDialog<String>(
       context: context,
       barrierColor: Colors.black.withOpacity(0.35),
-      builder: (context) => Material(
-        type: MaterialType.transparency,
-        child: Center(
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 28),
-            padding: const EdgeInsets.fromLTRB(22, 24, 22, 22),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(30),
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
-                    blurRadius: 25,
-                    offset: const Offset(0, 10))
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 201, 232, 255),
-                      borderRadius: BorderRadius.circular(22)),
-                  child: const Icon(Icons.category_outlined,
-                      size: 34, color: Color(0xFF012249)),
-                ),
-                const SizedBox(height: 18),
-                const Text(
-                  'Tambah Kategori',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF012249),
-                    decoration: TextDecoration.none,
-                    decorationColor: Colors.transparent,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Material(
+          type: MaterialType.transparency,
+          child: Center(
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 28),
+              padding: const EdgeInsets.fromLTRB(22, 24, 22, 22),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 25,
+                      offset: const Offset(0, 10))
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                        color: const Color.fromARGB(255, 201, 232, 255),
+                        borderRadius: BorderRadius.circular(22)),
+                    child: const Icon(Icons.category_outlined,
+                        size: 34, color: Color(0xFF012249)),
                   ),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  'untuk transaksi kamu',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey,
-                    height: 1.5,
-                    decoration: TextDecoration.none,
-                    decorationColor: Colors.transparent,
-                  ),
-                ),
-                const SizedBox(height: 22),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 201, 232, 255),
-                      borderRadius: BorderRadius.circular(18)),
-                  child: TextField(
-                    controller: ctrl,
-                    autofocus: true,
-                    style: const TextStyle(
+                  const SizedBox(height: 18),
+                  const Text(
+                    'Tambah Kategori',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                       color: Color(0xFF012249),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
                       decoration: TextDecoration.none,
                       decorationColor: Colors.transparent,
                     ),
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      hintText: 'Contoh: Hiburan',
-                      contentPadding: EdgeInsets.symmetric(vertical: 16),
-                      hintStyle: TextStyle(color: Colors.grey),
-                      prefixIcon:
-                          Icon(Icons.edit_outlined, color: Color(0xFF012249)),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'untuk transaksi kamu',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey,
+                      height: 1.5,
+                      decoration: TextDecoration.none,
+                      decorationColor: Colors.transparent,
                     ),
                   ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.pop(context),
-                        style: OutlinedButton.styleFrom(
-                          minimumSize: const Size(double.infinity, 52),
-                          side: BorderSide(color: Colors.grey.shade300),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16)),
-                        ),
-                        child: const Text('Batal',
-                            style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.grey,
-                                fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 22),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                        color: const Color.fromARGB(255, 201, 232, 255),
+                        borderRadius: BorderRadius.circular(18)),
+                    child: TextField(
+                      controller: ctrl,
+                      autofocus: true,
+                      style: const TextStyle(
+                        color: Color(0xFF012249),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        decoration: TextDecoration.none,
+                        decorationColor: Colors.transparent,
+                      ),
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        hintText: 'Contoh: Hiburan',
+                        contentPadding: EdgeInsets.symmetric(vertical: 16),
+                        hintStyle: TextStyle(color: Colors.grey),
+                        prefixIcon:
+                            Icon(Icons.edit_outlined, color: Color(0xFF012249)),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () =>
-                            Navigator.pop(context, ctrl.text.trim()),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF6DB5FD),
-                          elevation: 0,
-                          minimumSize: const Size(double.infinity, 52),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16)),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: OutlinedButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 52),
+                            side: BorderSide(color: Colors.grey.shade300),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16)),
+                          ),
+                          child: const Text('Batal',
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.w600)),
                         ),
-                        child: const Text('Tambah',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16)),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () =>
+                              Navigator.pop(context, ctrl.text.trim()),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF6DB5FD),
+                            elevation: 0,
+                            minimumSize: const Size(double.infinity, 52),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16)),
+                          ),
+                          child: const Text('Tambah',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -720,8 +725,9 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
-    Future.delayed(const Duration(milliseconds: 1500),
-        () { if (mounted) Navigator.pop(context); });
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (mounted) Navigator.pop(context);
+    });
   }
 
   @override
@@ -734,6 +740,7 @@ class _HomePageState extends State<HomePage> {
     ];
 
     return Scaffold(
+      resizeToAvoidBottomInset: false, 
       backgroundColor: Colors.white,
       body: SafeArea(
         top: true,
@@ -755,125 +762,119 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildTransaksiPage() {
-    return Scaffold(
-      backgroundColor: const Color(0xFF6DB5FD),
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const SizedBox(width: 44),
-                  const Text('Transaksi',
-                      style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF012249))),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const NotifikasiPage()),
-                      ).then((_) => setState(() => hasNotification = false));
-                    },
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Container(
-                          width: 44,
-                          height: 44,
-                          decoration: const BoxDecoration(
-                              color: Colors.white, shape: BoxShape.circle),
-                          child: const Icon(Icons.notifications_outlined,
-                              color: Color(0xFF012249), size: 22),
-                        ),
-                        if (hasNotification)
-                          Positioned(
-                            right: 6,
-                            top: 6,
-                            child: Container(
-                              width: 10,
-                              height: 10,
-                              decoration: BoxDecoration(
-                                color: Colors.red,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                    color: Colors.white, width: 1.5),
-                              ),
+    return Container(
+      color: const Color(0xFF6DB5FD),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const SizedBox(width: 44),
+                const Text('Transaksi',
+                    style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF012249))),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const NotifikasiPage()),
+                    ).then((_) => setState(() => hasNotification = false));
+                  },
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: const BoxDecoration(
+                            color: Colors.white, shape: BoxShape.circle),
+                        child: const Icon(Icons.notifications_outlined,
+                            color: Color(0xFF012249), size: 22),
+                      ),
+                      if (hasNotification)
+                        Positioned(
+                          right: 6,
+                          top: 6,
+                          child: Container(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 1.5),
                             ),
                           ),
-                      ],
-                    ),
+                        ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
+          ),
 
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  SummaryCard(
-                      label: 'Pengeluaran',
-                      amount: totalPengeluaran,
-                      icon: Icons.arrow_outward,
-                      formatRupiah: formatRupiah),
-                  const SizedBox(width: 12),
-                  SummaryCard(
-                      label: 'Pemasukan',
-                      amount: totalPemasukan,
-                      icon: Icons.south_west,
-                      formatRupiah: formatRupiah),
-                ],
-              ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                SummaryCard(
+                    label: 'Pengeluaran',
+                    amount: totalPengeluaran,
+                    icon: Icons.arrow_outward,
+                    formatRupiah: formatRupiah),
+                const SizedBox(width: 12),
+                SummaryCard(
+                    label: 'Pemasukan',
+                    amount: totalPemasukan,
+                    icon: Icons.south_west,
+                    formatRupiah: formatRupiah),
+              ],
             ),
-            const SizedBox(height: 12),
+          ),
+          const SizedBox(height: 12),
 
-            TambahTransaksiCard(
-              amountController: amountController,
-              selectedJenis: selectedJenis,
-              selectedKategori: selectedKategori,
-              kategoriItems: _getKategoriItems(),
-              onJenisChanged: (v) => setState(() {
-                selectedJenis = v;
-                selectedKategori = null;
-              }),
-              onKategoriChanged: (v) =>
-                  setState(() => selectedKategori = v),
-              onTambah: _tambahTransaksi,
-              onTambahKategori: _showTambahKategoriDialog,
-            ),
-            const SizedBox(height: 16),
+          TambahTransaksiCard(
+            amountController: amountController,
+            selectedJenis: selectedJenis,
+            selectedKategori: selectedKategori,
+            kategoriItems: _getKategoriItems(),
+            onJenisChanged: (v) => setState(() {
+              selectedJenis = v;
+              selectedKategori = null;
+            }),
+            onKategoriChanged: (v) => setState(() => selectedKategori = v),
+            onTambah: _tambahTransaksi,
+            onTambahKategori: _showTambahKategoriDialog,
+          ),
+          const SizedBox(height: 12),
 
-            Expanded(
-              child: TransaksiList(
-                items: _getFilteredTransaksi(),
-                formatRupiah: formatRupiah,
-                selectedMonth: selectedMonth,
-                onEdit: _editTransaksi,
-                onDelete: _delete,
-                onPickMonth: () async {
-                  final picked = await showDatePicker(
-                    context: context,
-                    initialDate: selectedMonth,
-                    firstDate: DateTime(2020),
-                    lastDate: DateTime(2100),
-                  );
-                  if (picked != null) {
-                    setState(() => selectedMonth = picked);
-                    _loadData();
-                  }
-                },
-              ),
+          Expanded(
+            child: TransaksiList(
+              items: _getFilteredTransaksi(),
+              formatRupiah: formatRupiah,
+              selectedMonth: selectedMonth,
+              onEdit: _editTransaksi,
+              onDelete: _delete,
+              onPickMonth: () async {
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: selectedMonth,
+                  firstDate: DateTime(2020),
+                  lastDate: DateTime(2100),
+                );
+                if (picked != null) {
+                  setState(() => selectedMonth = picked);
+                  _loadData();
+                }
+              },
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

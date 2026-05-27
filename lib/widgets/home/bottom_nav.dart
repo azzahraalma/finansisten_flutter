@@ -21,9 +21,8 @@ class BottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.only(
-        top: 20,
-        bottom: MediaQuery.of(context).padding.bottom + 10,
+      padding: const EdgeInsets.only( 
+        bottom: 10,
         left: 16,
         right: 16,
       ),

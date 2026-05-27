@@ -36,10 +36,13 @@ class AuthService {
   }
 
   Future<void> logout() async {
-    await _auth.signOut();
     final prefs = await SharedPreferences.getInstance();
     final uid = currentUserId;
-    final savedImage = uid != null ? prefs.getString('profile_image_$uid') : null;
+    final savedImage =
+        uid != null ? prefs.getString('profile_image_$uid') : null;
+
+    await _auth.signOut();
+
     await prefs.clear();
     if (savedImage != null && uid != null) {
       await prefs.setString('profile_image_$uid', savedImage);
@@ -51,6 +54,17 @@ class AuthService {
   String? getUserId() => _auth.currentUser?.uid;
 
   String? getUserEmail() => _auth.currentUser?.email;
+
+  Future<bool> updateEmail(String newEmail) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return false;
+      await user.verifyBeforeUpdateEmail(newEmail.toLowerCase().trim());
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
 
   Future<bool> updatePassword(String oldPassword, String newPassword) async {
     try {

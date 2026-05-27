@@ -122,6 +122,18 @@ class _ProfilePageState extends State<ProfilePage> {
       return;
     }
 
+    final currentEmail = _auth.getUserEmail();
+    if (email != currentEmail) {
+      final emailUpdated = await _auth.updateEmail(email);
+      if (!emailUpdated) {
+        _showTopSnack(
+          "Gagal update email. Coba login ulang lalu coba lagi.",
+          isError: true,
+        );
+        return;
+      }
+    }
+
     await _db.updateUserProfile(uid, {'username': username, 'email': email});
 
     setState(() {
@@ -135,7 +147,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void _showGantiPasswordDialog() {
     final userEmail = userData?['email']?.toString().trim() ?? '';
-    
+
     showDialog(
       context: context,
       barrierColor: Colors.black.withOpacity(0.45),
@@ -227,10 +239,10 @@ class _ProfilePageState extends State<ProfilePage> {
 
     final username = userData?['username']?.toString().trim() ?? '-';
     final email = userData?['email']?.toString().trim() ?? '-';
-
     final passwordBullets = '●' * (passwordLength > 0 ? passwordLength : 8);
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: kAccent,
       body: SafeArea(
         bottom: false,
@@ -258,53 +270,65 @@ class _ProfilePageState extends State<ProfilePage> {
             const SizedBox(height: 18),
 
             Expanded(
-              child: Container(
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(45),
-                    topRight: Radius.circular(45),
-                  ),
+              child: ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(45),
+                  topRight: Radius.circular(45),
                 ),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(20, 28, 20, 40),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ProfileFieldInput(
-                        label: "Username",
-                        controller: usernameController,
-                        isEditing: isEditingUsername,
-                        onToggle: () => setState(
-                            () => isEditingUsername = !isEditingUsername),
-                      ),
+                child: Container(
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(45),
+                      topRight: Radius.circular(45),
+                    ),
+                  ),
+                  child: SingleChildScrollView(
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
+                    padding: const EdgeInsets.fromLTRB(20, 28, 20, 40),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ProfileFieldInput(
+                          label: "Username",
+                          controller: usernameController,
+                          isEditing: isEditingUsername,
+                          onToggle: () => setState(
+                              () => isEditingUsername = !isEditingUsername),
+                        ),
 
-                      const SizedBox(height: 20),
+                        const SizedBox(height: 20),
 
-                      ProfileFieldInput(
-                        label: "Email",
-                        controller: emailController,
-                        isEditing: isEditingEmail,
-                        keyboardType: TextInputType.emailAddress,
-                        onToggle: () =>
-                            setState(() => isEditingEmail = !isEditingEmail),
-                      ),
+                        ProfileFieldInput(
+                          label: "Email",
+                          controller: emailController,
+                          isEditing: isEditingEmail,
+                          keyboardType: TextInputType.emailAddress,
+                          onToggle: () => setState(
+                              () => isEditingEmail = !isEditingEmail),
+                        ),
 
-                      const SizedBox(height: 20),
+                        const SizedBox(height: 20),
 
-                      _PasswordDisplayField(
-                        bullets: passwordBullets,
-                        onGantiPassword: _showGantiPasswordDialog,
-                      ),
+                        _PasswordDisplayField(
+                          bullets: passwordBullets,
+                          onGantiPassword: _showGantiPasswordDialog,
+                        ),
 
-                      const SizedBox(height: 24),
+                        const SizedBox(height: 24),
 
-                      ProfileActionButtons(
-                        onUpdate: _updateProfil,
-                        onLogout: _logout,
-                      ),
-                    ],
+                        ProfileActionButtons(
+                          onUpdate: _updateProfil,
+                          onLogout: _logout,
+                        ),
+
+                        SizedBox(
+                          height: MediaQuery.of(context).viewInsets.bottom,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
