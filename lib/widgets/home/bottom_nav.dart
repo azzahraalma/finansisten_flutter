@@ -21,11 +21,7 @@ class BottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.only( 
-        bottom: 10,
-        left: 16,
-        right: 16,
-      ),
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
       decoration: const BoxDecoration(
         color: Color.fromARGB(255, 201, 232, 255),
         borderRadius: BorderRadius.only(
@@ -41,14 +37,14 @@ class BottomNav extends StatelessWidget {
             onTap: () => onTap(i),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              width: 44,
-              height: 44,
+              width: 56,
+              height: 56,
               decoration: BoxDecoration(
                 color: isActive ? const Color(0xFF6DB5FD) : Colors.transparent,
                 shape: BoxShape.circle,
               ),
               child: Center(
-                child: Icon(_icons[i], color: const Color(0xFF012249), size: 32),
+                child: Icon(_icons[i], color: const Color(0xFF012249), size: 38),
               ),
             ),
           );

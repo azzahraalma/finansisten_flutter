@@ -182,11 +182,6 @@ class _BudgetDialogState extends State<BudgetDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final selectedNama = kategoriList
-        .where((e) => e['id']?.toString() == selectedKategori)
-        .map((e) => e['nama'].toString())
-        .toList();
-
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 24),

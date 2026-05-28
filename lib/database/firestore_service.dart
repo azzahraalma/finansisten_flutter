@@ -114,7 +114,6 @@ class FirestoreService {
   }
 
   Future<void> deleteTransaksi(String uid, String transaksiId) async {
-
     final notifSnap = await _notifications(uid)
         .where('transaksi_id', isEqualTo: transaksiId)
         .get();
@@ -122,7 +121,6 @@ class FirestoreService {
       await d.reference.delete();
     }
     await _transaksi(uid).doc(transaksiId).delete();
-    await resetBudgetNotifState(uid);
   }
 
   Future<String> insertBudget(String uid, Map<String, dynamic> data) async {
@@ -185,11 +183,6 @@ class FirestoreService {
   }
 
   Future<void> deleteBudget(String uid, String budgetId) async {
-    await _users()
-        .doc(uid)
-        .collection('budget_notif_state')
-        .doc(budgetId)
-        .delete();
     await _budget(uid).doc(budgetId).delete();
   }
 
@@ -254,31 +247,8 @@ class FirestoreService {
     return snap.docs.length;
   }
 
-  int _thresholdLevel(double percent) {
-    if (percent >= 100) return 3;
-    if (percent >= 80) return 2;
-    if (percent >= 40) return 1;
-    return 0;
-  }
-
-  CollectionReference _budgetNotifState(String uid) =>
-      _users().doc(uid).collection('budget_notif_state');
-
-  Future<void> resetBudgetNotifState(String uid) async {
-    final budgets = await getBudgetByUser(uid);
-    for (final b in budgets) {
-      final budgetId = b['id'] as String;
-      final limit = (b['limit_amount'] as num).toDouble();
-      final spent = (b['total_spent'] as num).toDouble();
-      final percent = (spent / limit * 100).clamp(0.0, 100.0);
-      final currentLevel = _thresholdLevel(percent);
-
-      await _budgetNotifState(uid)
-          .doc(budgetId)
-          .set({'detail_level': currentLevel});
-    }
-  }
-
+  /// Cek budget warning setiap kali ada transaksi baru.
+  /// Warning muncul setiap pengeluaran selama budget >= 40%.
   Future<List<Map<String, dynamic>>> checkBudgetWarning(
     String uid,
     String transaksiId,
@@ -288,62 +258,53 @@ class FirestoreService {
     final now = DateTime.now();
 
     for (final b in budgets) {
-      final budgetId = b['id'] as String;
       final limit = (b['limit_amount'] as num).toDouble();
       final spent = (b['total_spent'] as num).toDouble();
       final percent = (spent / limit * 100).clamp(0.0, 100.0);
       final nama = b['kategori_nama'] as String? ?? '-';
-      final currentLevel = _thresholdLevel(percent);
 
-      final lastDoc =
-          await _budgetNotifState(uid).doc(budgetId).get();
-      final lastLevel = lastDoc.exists
-          ? ((lastDoc.data() as Map)['detail_level'] as num).toInt()
-          : 0;
+      // Hanya trigger kalau budget sudah >= 40%
+      if (percent < 40) continue;
 
-      if (currentLevel > lastLevel && currentLevel > 0) {
-        String judul;
-        String pesan;
+      String judul;
+      String pesan;
 
-        if (currentLevel == 3) {
-          judul = 'Budget $nama Habis! 🚨';
-          pesan = 'Budget $nama sudah terpakai 100%. Kamu sudah melebihi limit!';
-        } else if (currentLevel == 2) {
-          judul = 'Budget $nama Hampir Habis ⚠️';
-          pesan =
-              'Budget $nama sudah terpakai ${percent.toStringAsFixed(0)}%. Hati-hati!';
-        } else {
-          judul = 'Peringatan Budget $nama';
-          pesan =
-              'Budget $nama sudah terpakai ${percent.toStringAsFixed(0)}%.';
-        }
-
-        final sisa = limit - spent;
-        final sisaStr = sisa <= 0
-            ? 'Limit terlampaui!'
-            : 'Sisa Rp ${sisa.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+$)'), (m) => '${m[1]}.')}';
-
-        await insertNotification(uid, {
-          'tipe': 'warning_budget',
-          'judul': judul,
-          'pesan': pesan,
-          'detail': sisaStr,
-          'waktu': now.toIso8601String(),
-          'is_read': false,
-          'transaksi_id': transaksiId,
-        });
-
-        await _budgetNotifState(uid)
-            .doc(budgetId)
-            .set({'detail_level': currentLevel});
-
-        warnings.add({
-          'judul': judul,
-          'pesan': pesan,
-          'percent': percent,
-          'nama': nama,
-        });
+      if (percent >= 100) {
+        judul = 'Budget $nama Habis! 🚨';
+        pesan =
+            'Budget $nama sudah terpakai 100%. Kamu sudah melebihi limit!';
+      } else if (percent >= 80) {
+        judul = 'Budget $nama Hampir Habis ⚠️';
+        pesan =
+            'Budget $nama sudah terpakai ${percent.toStringAsFixed(0)}%. Hati-hati!';
+      } else {
+        judul = 'Peringatan Budget $nama';
+        pesan =
+            'Budget $nama sudah terpakai ${percent.toStringAsFixed(0)}%.';
       }
+
+      final sisa = limit - spent;
+      final sisaStr = sisa <= 0
+          ? 'Limit terlampaui!'
+          : 'Sisa Rp ${sisa.toStringAsFixed(0).replaceAllMapped(
+              RegExp(r'(\d)(?=(\d{3})+$)'), (m) => '${m[1]}.')}';
+
+      await insertNotification(uid, {
+        'tipe': 'warning_budget',
+        'judul': judul,
+        'pesan': pesan,
+        'detail': sisaStr,
+        'waktu': now.toIso8601String(),
+        'is_read': false,
+        'transaksi_id': transaksiId,
+      });
+
+      warnings.add({
+        'judul': judul,
+        'pesan': pesan,
+        'percent': percent,
+        'nama': nama,
+      });
     }
     return warnings;
   }

@@ -47,9 +47,12 @@ class _LaporanPageState extends State<LaporanPage> {
   }
 
   Future<void> _loadLaporan() async {
+    if (!mounted) return;
     setState(() => loading = true);
 
     final userId = await _auth.getUserId();
+    if (!mounted) return;
+
     if (userId == null) {
       setState(() => loading = false);
       return;
@@ -65,18 +68,21 @@ class _LaporanPageState extends State<LaporanPage> {
       start.toIso8601String(),
       end.toIso8601String(),
     );
+    if (!mounted) return;
 
     final current = await DatabaseHelper.instance.getSummaryLaporan(
       userId,
       start.toIso8601String(),
       end.toIso8601String(),
     );
+    if (!mounted) return;
 
     final previous = await DatabaseHelper.instance.getSummaryLaporan(
       userId,
       prevStart.toIso8601String(),
       prevEnd.toIso8601String(),
     );
+    if (!mounted) return;
 
     _generateTips(current, previous);
 
@@ -151,6 +157,7 @@ class _LaporanPageState extends State<LaporanPage> {
             LaporanHeader(
               monthController: monthController,
               onPageChanged: (index) {
+                if (!mounted) return;
                 final diff = index - 500;
                 setState(() {
                   selectedMonth = DateTime(

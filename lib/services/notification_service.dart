@@ -23,10 +23,11 @@ class NotificationService {
       const InitializationSettings(android: android, iOS: ios),
     );
 
-    await _plugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.requestNotificationsPermission();
+    final androidImpl = _plugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+
+    await androidImpl?.requestNotificationsPermission();
+    await androidImpl?.requestExactAlarmsPermission();
 
     await jadwalkanReminderHarian();
     await jadwalkanLaporanBulanan();
