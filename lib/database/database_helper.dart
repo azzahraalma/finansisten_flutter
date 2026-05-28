@@ -1,5 +1,6 @@
 import '../services/auth_service.dart';
 import 'firestore_service.dart';
+import '../services/notification_service.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -81,7 +82,17 @@ class DatabaseHelper {
     if (uid == null) {
       throw Exception('User harus login untuk menyimpan notifikasi');
     }
-    return _db.insertNotification(uid, data);
+
+    final docId = await _db.insertNotification(uid, data);
+
+    await NotificationService.show(
+      id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      title: data['judul']?.toString() ?? 'Notifikasi',
+      body: data['pesan']?.toString() ?? '',
+      detail: data['detail']?.toString(),
+    );
+
+    return docId;
   }
 
   Future<List<Map<String, dynamic>>> getLaporanByPeriode(

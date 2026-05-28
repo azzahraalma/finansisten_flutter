@@ -10,12 +10,10 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # Firebase
   firebase_core: ^4.9.0
   firebase_auth: ^6.5.1
   cloud_firestore: ^6.4.1
 
-  # UI & Utils (sama seperti sebelumnya)
   google_fonts: ^6.2.1
   shared_preferences: ^2.2.2
   cupertino_icons: ^1.0.8
@@ -23,6 +21,9 @@ dependencies:
   image_picker: ^1.1.2
   fl_chart: ^0.68.0
   flutter_native_splash: ^2.4.0
+
+  flutter_local_notifications: ^19.0.0
+  timezone: ^0.10.1
 
 dev_dependencies:
   flutter_test:
